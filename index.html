@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Salon Cloud — Appointment Calendar Demo</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          primary: '#C88EA7',
+          'primary-light': '#F0E0E8',
+          'primary-dark': '#9B6B82',
+          bg: '#FEFAF6',
+          surface: '#FFFFFF',
+          text: '#2D2D2D',
+          'text-muted': '#8B7E8B',
+          danger: '#D4736A',
+          success: '#6B9B7D',
+        }
+      }
+    }
+  }
+</script>
+</head>
+<body class="bg-bg min-h-screen font-sans antialiased">
+
+<!-- ========== LAYOUT MIMICS AppLayout ========== -->
+<nav class="bg-white border-b border-gray-100 px-6 py-3 flex items-center justify-between shadow-sm">
+  <div class="flex items-center gap-3">
+    <span class="text-2xl">💆</span>
+    <span class="font-bold text-lg text-primary-dark">Salon Cloud</span>
+  </div>
+  <div class="flex items-center gap-4 text-sm text-text-muted">
+    <span>📅 2026年6月27日</span>
+    <span class="bg-primary-light text-primary-dark px-3 py-1 rounded-full text-xs font-semibold">Demo Mode</span>
+  </div>
+</nav>
+
+<main class="max-w-6xl mx-auto p-6">
+
+  <!-- ========== DEMO BANNER ========== -->
+  <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-3 mb-6 text-center text-sm text-yellow-700">
+    ⚠️ This is a <strong>static demo</strong> with mock data. No real database connection. Source code: <a href="https://github.com/ManShingYip/salon-cloud-portfolio" class="underline">github.com/ManShingYip/salon-cloud-portfolio</a>
+  </div>
+
+  <!-- ========== STATS ROW ========== -->
+  <div class="grid grid-cols-4 gap-4 mb-6" id="statsRow"></div>
+
+  <!-- ========== APPOINTMENT CALENDAR ========== -->
+  <h2 class="text-lg font-bold text-text mb-3 flex items-center gap-2">
+    <span>📅</span> Today's Appointments — Mock Demo
+  </h2>
+  <div id="appointmentsList" class="space-y-3"></div>
+
+  <!-- ========== CLIENT TABLE ========== -->
+  <h2 class="text-lg font-bold text-text mt-8 mb-3 flex items-center gap-2">
+    <span>👥</span> Client List
+  </h2>
+  <div id="clientsTable"></div>
+
+  <!-- ========== TREATMENT CARDS ========== -->
+  <h2 class="text-lg font-bold text-text mt-8 mb-3 flex items-center gap-2">
+    <span>💆</span> Treatment Catalog
+  </h2>
+  <div id="treatmentsGrid" class="grid grid-cols-3 gap-4"></div>
+
+  <!-- ========== PAYMENT METHODS ========== -->
+  <h2 class="text-lg font-bold text-text mt-8 mb-3 flex items-center gap-2">
+    <span>💳</span> Payment Methods Supported
+  </h2>
+  <div id="paymentMethods" class="flex gap-3 flex-wrap"></div>
+
+</main>
+
+<script>
+// ============================================================
+// MOCK DATA
+// ============================================================
+const mockAppointments = [
+  { id:1, client:"陳小姐", member:"Y-00001", treatment:"深層清潔面部護理", time:"10:00", end:"11:30", staff:"Amy", room:"Room A", status:"confirmed", vip:true, sensitive:false },
+  { id:2, client:"李太", member:"Y-00002", treatment:"膠原蛋白導入", time:"11:00", end:"12:00", staff:"Betty", room:"VIP 房", status:"attended", vip:false, sensitive:false },
+  { id:3, client:"張小姐", member:"Y-00003", treatment:"激光去斑療程", time:"14:00", end:"15:30", staff:"Amy", room:"Room B", status:"confirmed", vip:false, sensitive:true },
+  { id:4, client:"王太", member:"Y-00004", treatment:"深層清潔面部護理", time:"14:30", end:"16:00", staff:"Betty", room:"Room A", status:"cancelled", vip:false, sensitive:false },
+  { id:5, client:"趙小姐", member:"Y-00005", treatment:"膠原蛋白導入", time:"16:00", end:"17:00", staff:"Amy", room:"Room B", status:"confirmed", vip:true, sensitive:false },
+];
+
+const mockClients = [
+  { name:"陳小姐", member:"Y-00001", phone:"****-1234", source:"IG廣告", sensitive:false, last:"2026-06-20", spent:12800 },
+  { name:"李太", member:"Y-00002", phone:"****-5678", source:"朋友介紹", sensitive:false, last:"2026-06-19", spent:5600 },
+  { name:"張小姐", member:"Y-00003", phone:"****-9012", source:"街客", sensitive:true, last:"2026-06-18", spent:23400 },
+  { name:"王太", member:"Y-00004", phone:"****-3456", source:"IG廣告", sensitive:false, last:"2026-05-15", spent:3200 },
+  { name:"趙小姐", member:"Y-00005", phone:"****-7890", source:"朋友介紹", sensitive:false, last:"2026-06-21", spent:18900 },
+];
+
+const mockTreatments = [
+  { name:"深層清潔面部護理", category:"面部護理", single:580, duration:90, sessions:10, package:4800 },
+  { name:"膠原蛋白導入", category:"面部護理", single:880, duration:60, sessions:6, package:4200 },
+  { name:"激光去斑療程", category:"光學療程", single:1200, duration:90, sessions:5, package:5000 },
+  { name:"背部推油", category:"身體護理", single:480, duration:60, sessions:0, package:0 },
+  { name:"香薰按摩", category:"身體護理", single:680, duration:90, sessions:8, package:4500 },
+];
+
+const methods = ["現金 💵","信用卡 💳","轉賬 🏦","PayMe 📱","AlipayHK 📲"];
+
+// ============================================================
+// RENDER FUNCTIONS
+// ============================================================
+
+// Stats
+const stats = [
+  { label:"今日預約", value:mockAppointments.length, color:"text-primary-dark" },
+  { label:"今日收入", value:"HK$6,800", color:"text-success" },
+  { label:"活躍客戶", value:mockClients.length, color:"text-primary-dark" },
+  { label:"緩存訂單", value:"23 筆", color:"text-yellow-600" },
+];
+document.getElementById('statsRow').innerHTML = stats.map(s => `
+  <div class="bg-surface rounded-xl p-5 shadow-sm border border-gray-100 text-center">
+    <div class="text-3xl font-extrabold ${s.color}">${s.value}</div>
+    <div class="text-xs text-text-muted mt-1 uppercase tracking-wide">${s.label}</div>
+  </div>
+`).join('');
+
+// Appointments
+const statusColors = { confirmed:'bg-blue-100 text-blue-700', attended:'bg-green-100 text-green-700', cancelled:'bg-gray-100 text-gray-500' };
+const statusLabels = { confirmed:'已確認', attended:'已出席', cancelled:'已取消' };
+
+document.getElementById('appointmentsList').innerHTML = mockAppointments.map(a => `
+  <div class="bg-surface rounded-xl p-4 shadow-sm border border-gray-100 flex items-center gap-4 hover:shadow-md transition-shadow">
+    <div class="text-center w-16 shrink-0">
+      <div class="text-lg font-bold text-text">${a.time}</div>
+      <div class="text-xs text-text-muted">${a.end}</div>
+    </div>
+    <div class="flex-1 min-w-0">
+      <div class="flex items-center gap-2">
+        <span class="font-semibold text-text">${a.client}</span>
+        ${a.vip ? '<span class="text-xs bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full font-medium">VIP</span>' : ''}
+        ${a.sensitive ? '<span class="text-xs bg-red-100 text-red-600 px-2 py-0.5 rounded-full font-medium">⚠️ 敏感</span>' : ''}
+      </div>
+      <div class="text-sm text-text-muted">${a.treatment}</div>
+    </div>
+    <div class="text-sm text-text-muted text-center w-20 shrink-0">👩‍🔧 ${a.staff}</div>
+    <div class="text-sm text-text-muted text-center w-16 shrink-0">🚪 ${a.room}</div>
+    <span class="text-xs px-3 py-1 rounded-full font-medium shrink-0 ${statusColors[a.status]}">${statusLabels[a.status]}</span>
+  </div>
+`).join('');
+
+// Clients
+document.getElementById('clientsTable').innerHTML = `
+<table class="w-full bg-surface rounded-xl overflow-hidden shadow-sm border border-gray-100">
+  <thead>
+    <tr class="bg-bg text-xs uppercase text-text-muted border-b">
+      <th class="px-6 py-4 text-left font-bold">會員編號</th>
+      <th class="px-6 py-4 text-left font-bold">姓名</th>
+      <th class="px-6 py-4 text-left font-bold">電話</th>
+      <th class="px-6 py-4 text-left font-bold">來源</th>
+      <th class="px-6 py-4 text-left font-bold">最後到訪</th>
+      <th class="px-6 py-4 text-right font-bold">累積消費</th>
+    </tr>
+  </thead>
+  <tbody class="divide-y divide-gray-100">
+    ${mockClients.map(c => `
+      <tr class="hover:bg-bg transition-colors">
+        <td class="px-6 py-4 font-mono text-sm font-semibold text-primary-dark">${c.member}</td>
+        <td class="px-6 py-4 font-medium">${c.name} ${c.sensitive ? '<span class="text-xs bg-red-100 text-red-600 px-2 py-0.5 rounded-full ml-1">敏感</span>' : ''}</td>
+        <td class="px-6 py-4 text-sm text-text-muted">${c.phone}</td>
+        <td class="px-6 py-4"><span class="text-xs bg-primary-light text-primary-dark px-3 py-1 rounded-full">${c.source}</span></td>
+        <td class="px-6 py-4 text-sm text-text-muted">${c.last}</td>
+        <td class="px-6 py-4 text-right font-semibold">HK$${c.spent.toLocaleString()}</td>
+      </tr>
+    `).join('')}
+  </tbody>
+</table>`;
+
+// Treatments
+document.getElementById('treatmentsGrid').innerHTML = mockTreatments.map(t => `
+  <div class="bg-surface rounded-xl p-5 border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
+    <div class="text-xs text-primary-dark font-semibold uppercase tracking-wide mb-1">${t.category}</div>
+    <div class="font-bold text-text text-lg mb-2">${t.name}</div>
+    <div class="flex justify-between text-sm mb-1"><span class="text-text-muted">單次</span><span class="font-semibold">HK$${t.single}</span></div>
+    <div class="flex justify-between text-sm mb-1"><span class="text-text-muted">時長</span><span>${t.duration} 分鐘</span></div>
+    ${t.sessions > 0 ? `<div class="flex justify-between text-sm"><span class="text-text-muted">套票</span><span class="font-semibold text-success">${t.sessions}次 / HK$${t.package.toLocaleString()}</span></div>` : '<div class="text-sm text-text-muted italic">無套票</div>'}
+  </div>
+`).join('');
+
+// Payment methods
+document.getElementById('paymentMethods').innerHTML = methods.map(m => `
+  <span class="bg-surface border border-gray-200 rounded-full px-5 py-3 text-sm font-medium shadow-sm">${m}</span>
+`).join('');
+
+</script>
+
+<footer class="text-center py-8 text-xs text-text-muted border-t border-gray-100 mt-12">
+  <p>Salon Cloud Demo · Built with ❤️ by Man Shing Yip · Mock data only — no real database connection</p>
+  <p class="mt-1">Full source (private): github.com/ManShingYip/salon-cloud-pwa · Portfolio: github.com/ManShingYip/salon-cloud-portfolio</p>
+</footer>
+
+</body>
+</html>

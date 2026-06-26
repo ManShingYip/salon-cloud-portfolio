@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Salon Cloud — System Architecture & Database Design</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          primary: '#C88EA7',
+          'primary-dark': '#9B6B82',
+          'primary-light': '#F0E0E8',
+          bg: '#FEFAF6',
+          surface: '#FFFFFF',
+          text: '#2D2D2D',
+          'text-muted': '#8B7E8B',
+          success: '#6B9B7D',
+          danger: '#D4736A',
+          amber: '#D4A853',
+        }
+      }
+    }
+  }
+</script>
+<style>
+  .arch-node {
+    transition: all 0.2s;
+  }
+  .arch-node:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+  }
+  .connector-line {
+    position: absolute;
+    background: #D4C0C8;
+  }
+</style>
+</head>
+<body class="bg-bg min-h-screen font-sans antialiased text-text">
+
+<div class="max-w-5xl mx-auto p-6">
+
+  <!-- Header -->
+  <div class="text-center mb-10">
+    <h1 class="text-3xl font-extrabold text-primary-dark">🏗️ Salon Cloud — System Design</h1>
+    <p class="text-text-muted mt-2">Architecture overview · Database schema · Security layers</p>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- ARCHITECTURE DIAGRAM -->
+  <!-- ============================================================ -->
+  <h2 class="text-xl font-bold mb-4 flex items-center gap-2">
+    <span class="w-8 h-8 rounded-lg bg-primary-light flex items-center justify-center text-sm">1</span>
+    System Architecture
+  </h2>
+
+  <div class="bg-surface rounded-2xl p-8 shadow-sm border border-gray-100 mb-8">
+    <!-- Client Layer -->
+    <div class="flex justify-center mb-4">
+      <div class="arch-node bg-primary-light border-2 border-primary rounded-xl p-4 text-center w-64">
+        <div class="text-2xl mb-1">📱</div>
+        <div class="font-bold text-primary-dark">iPad (Safari/Chrome)</div>
+      </div>
+    </div>
+
+    <div class="flex justify-center mb-2">
+      <span class="text-text-muted text-lg">⬇ HTTPS</span>
+    </div>
+
+    <!-- PWA Layer -->
+    <div class="flex justify-center mb-4">
+      <div class="arch-node bg-white border-2 border-primary-dark rounded-xl p-5 w-full max-w-lg">
+        <div class="font-bold text-lg mb-3">Salon Cloud PWA (React SPA)</div>
+        <div class="grid grid-cols-2 gap-2 text-xs">
+          <div class="bg-bg rounded-lg p-2"><strong>AuthContext</strong><br><span class="text-text-muted">Supabase JWT</span></div>
+          <div class="bg-bg rounded-lg p-2"><strong>AppLayout</strong><br><span class="text-text-muted">React Router v6</span></div>
+          <div class="bg-bg rounded-lg p-2"><strong>ConfirmContext</strong><br><span class="text-text-muted">Global Dialogs</span></div>
+          <div class="bg-bg rounded-lg p-2"><strong>Service Worker</strong><br><span class="text-text-muted">Network-first</span></div>
+        </div>
+        <div class="text-xs text-text-muted mt-3 text-center">15 pages · ~7,000 lines · 36 source files</div>
+      </div>
+    </div>
+
+    <div class="flex justify-center mb-2">
+      <span class="text-text-muted text-lg">⬇ HTTPS</span>
+    </div>
+
+    <!-- CDN + Backend Layer -->
+    <div class="grid grid-cols-2 gap-4">
+      <div class="arch-node bg-surface border-2 border-gray-200 rounded-xl p-4 text-center">
+        <div class="font-bold text-text">🌐 Vercel Edge CDN</div>
+        <div class="text-xs text-text-muted mt-1">CI/CD Auto-deploy · Free Hobby Plan</div>
+      </div>
+      <div class="arch-node bg-surface border-2 border-gray-200 rounded-xl p-4 text-center">
+        <div class="font-bold text-text">☁️ Supabase Cloud</div>
+        <div class="text-xs text-text-muted mt-1">PostgreSQL + Auth + RLS + RPC</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- DATABASE ER DIAGRAM -->
+  <!-- ============================================================ -->
+  <h2 class="text-xl font-bold mb-4 flex items-center gap-2">
+    <span class="w-8 h-8 rounded-lg bg-primary-light flex items-center justify-center text-sm">2</span>
+    Database ER Diagram
+  </h2>
+
+  <div class="bg-surface rounded-2xl p-8 shadow-sm border border-gray-100 mb-8 overflow-x-auto">
+    <div class="min-w-[700px]">
+
+      <!-- ER Diagram — CSS Grid -->
+      <div class="relative">
+
+        <!-- Row 1: Auth -->
+        <div class="flex justify-center mb-6">
+          <div class="bg-bg border-2 border-primary-dark rounded-xl p-4 w-48 text-center">
+            <div class="font-bold text-sm text-primary-dark">🔐 profiles</div>
+            <div class="text-xs text-text-muted mt-1">Users & Roles</div>
+            <div class="text-xs text-text-muted">shop_owner | staff</div>
+          </div>
+        </div>
+
+        <div class="flex justify-center text-text-muted text-sm mb-6">⬇</div>
+
+        <!-- Row 2: Core Business -->
+        <div class="flex justify-center gap-8 flex-wrap">
+          <!-- Clients -->
+          <div class="bg-white border-2 border-primary rounded-xl p-4 w-44 text-center">
+            <div class="font-bold text-sm">👥 clients</div>
+            <div class="text-[10px] text-text-muted mt-1">name · phone · member_id</div>
+            <div class="text-[10px] text-text-muted">source · is_sensitive</div>
+          </div>
+
+          <!-- Appointments (center) -->
+          <div class="bg-white border-2 border-primary rounded-xl p-4 w-52 text-center relative z-10">
+            <div class="font-bold text-sm">📅 appointments</div>
+            <div class="text-[10px] text-text-muted mt-1">client_id · staff_id · room_id</div>
+            <div class="text-[10px] text-text-muted">treatment_id · start_time · status</div>
+            <div class="text-[10px] text-text-muted">confirmed | attended | cancelled | no_show</div>
+          </div>
+
+          <!-- Rooms -->
+          <div class="bg-white border-2 border-primary rounded-xl p-4 w-44 text-center">
+            <div class="font-bold text-sm">🚪 rooms</div>
+            <div class="text-[10px] text-text-muted mt-1">name · capacity</div>
+          </div>
+        </div>
+
+        <!-- Arrows row 2 -->
+        <div class="flex justify-center gap-8 text-text-muted text-sm mt-4 flex-wrap">
+          <span>⬇</span>
+          <span></span>
+          <span>⬇</span>
+        </div>
+
+        <!-- Row 3: Services & Money -->
+        <div class="flex justify-center gap-8 flex-wrap mt-6">
+          <!-- Treatments -->
+          <div class="bg-white border-2 border-gray-300 rounded-xl p-4 w-44 text-center">
+            <div class="font-bold text-sm">💆 treatments</div>
+            <div class="text-[10px] text-text-muted mt-1">name · category · single_price</div>
+            <div class="text-[10px] text-text-muted">duration · is_active</div>
+          </div>
+
+          <!-- Client Services (ORDER) -->
+          <div class="bg-amber-50 border-2 border-amber rounded-xl p-4 w-52 text-center">
+            <div class="font-bold text-sm">🟡 client_services</div>
+            <div class="text-xs text-amber font-semibold mt-1">📦 ORDER CONCEPT</div>
+            <div class="text-[10px] text-text-muted">total_sessions · remaining_sessions</div>
+            <div class="text-[10px] text-text-muted">unit_price · status</div>
+          </div>
+
+          <!-- Payment Transactions -->
+          <div class="bg-green-50 border-2 border-success rounded-xl p-4 w-44 text-center">
+            <div class="font-bold text-sm">🟢 payment_transactions</div>
+            <div class="text-[10px] text-text-muted mt-1">amount · payment_method</div>
+            <div class="text-[10px] text-text-muted">client_service_id</div>
+          </div>
+        </div>
+
+        <!-- Arrows row 3 -->
+        <div class="flex justify-center gap-8 text-text-muted text-sm mt-4 flex-wrap">
+          <span>⬇</span>
+        </div>
+
+        <!-- Row 4: Supporting -->
+        <div class="flex justify-center gap-8 flex-wrap mt-6">
+          <div class="bg-red-50 border-2 border-danger rounded-xl p-4 w-36 text-center">
+            <div class="font-bold text-sm">↩️ refunds</div>
+          </div>
+          <div class="bg-gray-100 border-2 border-gray-400 rounded-xl p-4 w-40 text-center">
+            <div class="font-bold text-sm">📋 activity_log</div>
+            <div class="text-[10px] text-text-muted mt-1">INSERT ONLY</div>
+          </div>
+          <div class="bg-white border-2 border-gray-300 rounded-xl p-4 w-36 text-center">
+            <div class="font-bold text-sm">👔 staff_schedules</div>
+          </div>
+          <div class="bg-white border-2 border-gray-300 rounded-xl p-4 w-36 text-center">
+            <div class="font-bold text-sm">🔗 treatment_rooms</div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Stats -->
+      <div class="flex justify-center gap-8 mt-8 pt-6 border-t border-gray-100">
+        <div class="text-center"><span class="text-2xl font-extrabold text-primary-dark">11</span><br><span class="text-xs text-text-muted">Tables</span></div>
+        <div class="text-center"><span class="text-2xl font-extrabold text-primary-dark">15+</span><br><span class="text-xs text-text-muted">RPC Functions</span></div>
+        <div class="text-center"><span class="text-2xl font-extrabold text-primary-dark">20+</span><br><span class="text-xs text-text-muted">RLS Policies</span></div>
+        <div class="text-center"><span class="text-2xl font-extrabold text-primary-dark">3</span><br><span class="text-xs text-text-muted">Triggers</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- SECURITY MODEL -->
+  <!-- ============================================================ -->
+  <h2 class="text-xl font-bold mb-4 flex items-center gap-2">
+    <span class="w-8 h-8 rounded-lg bg-primary-light flex items-center justify-center text-sm">3</span>
+    Multi-Layer Security Architecture
+  </h2>
+
+  <div class="bg-surface rounded-2xl p-8 shadow-sm border border-gray-100 mb-8">
+    <div class="grid grid-cols-2 gap-4">
+      <div class="border border-gray-200 rounded-xl p-4">
+        <div class="font-bold text-sm mb-2">🛡️ Layer 1: Authentication</div>
+        <ul class="text-sm text-text-muted space-y-1 list-disc ml-4">
+          <li>Supabase JWT (JSON Web Token)</li>
+          <li>Magic Link + Password Reset flow</li>
+          <li>Session auto-refresh</li>
+        </ul>
+      </div>
+      <div class="border border-gray-200 rounded-xl p-4">
+        <div class="font-bold text-sm mb-2">🔑 Layer 2: Authorization</div>
+        <ul class="text-sm text-text-muted space-y-1 list-disc ml-4">
+          <li>Row-Level Security (RLS) — all 11 tables</li>
+          <li>Role-based policies (shop_owner / staff)</li>
+          <li>Custom Claims in JWT app_metadata</li>
+        </ul>
+      </div>
+      <div class="border border-gray-200 rounded-xl p-4">
+        <div class="font-bold text-sm mb-2">🔒 Layer 3: Data Integrity</div>
+        <ul class="text-sm text-text-muted space-y-1 list-disc ml-4">
+          <li>CHECK constraints (price > 0, capacity > 0)</li>
+          <li>NOT NULL constraints on critical fields</li>
+          <li>Frontend + backend dual input validation</li>
+        </ul>
+      </div>
+      <div class="border border-gray-200 rounded-xl p-4">
+        <div class="font-bold text-sm mb-2">📋 Layer 4: Audit Trail</div>
+        <ul class="text-sm text-text-muted space-y-1 list-disc ml-4">
+          <li>activity_log — INSERT-ONLY</li>
+          <li>RLS denies UPDATE / DELETE</li>
+          <li>All money/session mutations logged</li>
+        </ul>
+      </div>
+      <div class="border border-gray-200 rounded-xl p-4">
+        <div class="font-bold text-sm mb-2">⚛️ Layer 5: Atomic Operations</div>
+        <ul class="text-sm text-text-muted space-y-1 list-disc ml-4">
+          <li>SECURITY DEFINER RPC functions</li>
+          <li>FOR UPDATE row locks</li>
+          <li>Idempotent consumption checks</li>
+        </ul>
+      </div>
+      <div class="border border-gray-200 rounded-xl p-4">
+        <div class="font-bold text-sm mb-2">🔐 Layer 6: Key Management</div>
+        <ul class="text-sm text-text-muted space-y-1 list-disc ml-4">
+          <li>ANON key → browser-safe, RLS-protected</li>
+          <li>SECRET key → server-only, never exposed</li>
+          <li>Git history cleaned · .env in .gitignore</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- DESIGN PRINCIPLES -->
+  <!-- ============================================================ -->
+  <h2 class="text-xl font-bold mb-4 flex items-center gap-2">
+    <span class="w-8 h-8 rounded-lg bg-primary-light flex items-center justify-center text-sm">4</span>
+    Design Principles
+  </h2>
+
+  <div class="bg-surface rounded-2xl p-8 shadow-sm border border-gray-100 mb-8">
+    <div class="grid grid-cols-3 gap-4">
+      <div class="text-center p-4">
+        <div class="text-3xl mb-2">💰</div>
+        <div class="font-bold text-sm mb-1">Order-Centric</div>
+        <div class="text-xs text-text-muted">client_services = 訂單<br>可自由調整金額與次數</div>
+      </div>
+      <div class="text-center p-4">
+        <div class="text-3xl mb-2">🔄</div>
+        <div class="font-bold text-sm mb-1">Buffer Concept</div>
+        <div class="text-xs text-text-muted">未完全完成 = 緩存<br>做完 + 收足 = 確定收入</div>
+      </div>
+      <div class="text-center p-4">
+        <div class="text-3xl mb-2">👩‍💼</div>
+        <div class="font-bold text-sm mb-1">Owner-Driven</div>
+        <div class="text-xs text-text-muted">店長說了算<br>所有數字自由輸入</div>
+      </div>
+      <div class="text-center p-4">
+        <div class="text-3xl mb-2">📱</div>
+        <div class="font-bold text-sm mb-1">iPad First</div>
+        <div class="text-xs text-text-muted">1024×768 觸控<br>48px touch targets</div>
+      </div>
+      <div class="text-center p-4">
+        <div class="text-3xl mb-2">💸</div>
+        <div class="font-bold text-sm mb-1">HK$0/month</div>
+        <div class="text-xs text-text-muted">Vercel Free + Supabase Free<br>零營運成本</div>
+      </div>
+      <div class="text-center p-4">
+        <div class="text-3xl mb-2">🧹</div>
+        <div class="font-bold text-sm mb-1">Clean Code</div>
+        <div class="text-xs text-text-muted">Custom hooks · Context API<br>Lazy loading · Modular</div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="text-center py-8 text-xs text-text-muted border-t border-gray-100">
+    <p>Salon Cloud · Built by <a href="https://linkedin.com/in/man-shing-yip-b5b5473b8" class="text-primary-dark underline">Man Shing Yip</a> · June 2026</p>
+    <p class="mt-1">Source (private): github.com/ManShingYip/salon-cloud-pwa · Portfolio: github.com/ManShingYip/salon-cloud-portfolio</p>
+  </footer>
+
+</div>
+
+</body>
+</html>
