@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Salon Cloud — Full-Stack PWA Salon Management System | Man Shing Yip</title>
 
-<!-- OG Meta Tags for LinkedIn share card -->
 <meta property="og:title" content="Salon Cloud — Full-Stack PWA Salon Management System">
 <meta property="og:description" content="Independently built 15-page PWA for a real Hong Kong beauty salon. React 18 + Supabase + PostgreSQL + Vercel. HK$0/month operating cost.">
 <meta property="og:type" content="website">
@@ -27,20 +26,14 @@
     --text: #2D2D2D;
     --text-muted: #6B6B6B;
     --text-light: #8B7E8B;
-    --border: #E8E0E0;
-    --border-light: #F0E8E8;
+    --border: #e5e7eb;
+    --border-light: #f0e8e8;
     --green: #6B9B7D;
-    --green-bg: #EDF7F0;
     --amber: #D4A853;
-    --amber-bg: #FDF8EE;
     --red: #D4736A;
-    --red-bg: #FDF0EE;
-    --blue: #5B8DB8;
-    --blue-bg: #EDF3F8;
-    --shadow-sm: 0 1px 3px rgba(0,0,0,0.04);
-    --shadow-md: 0 4px 16px rgba(0,0,0,0.06);
-    --radius: 10px;
-    --max-w: 1060px;
+    --blue: #3B82F6;
+    --radius: 12px;
+    --max-w: 1200px;
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body {
@@ -51,807 +44,581 @@
     -webkit-font-smoothing: antialiased;
   }
 
-  .container { max-width: var(--max-w); margin: 0 auto; padding: 0 24px; }
+  /* -- Shell -- */
+  .shell { max-width: var(--max-w); margin: 0 auto; }
 
-  /* ---- Header ---- */
-  .header {
+  /* -- Top nav bar -- */
+  .topbar {
     background: var(--surface);
     border-bottom: 1px solid var(--border);
-    padding: 48px 24px 40px;
-    text-align: center;
+    padding: 10px 20px;
+    display: flex; align-items: center; justify-content: space-between;
   }
-  .header h1 {
-    font-size: clamp(26px, 4vw, 36px);
-    font-weight: 800;
-    color: var(--text);
-    letter-spacing: -0.5px;
+  .topbar .brand { font-weight: 700; font-size: 15px; color: var(--primary-dark); }
+  .topbar .brand .dot { display: inline-block; width: 8px; height: 8px; background: var(--primary); border-radius: 50%; margin-right: 6px; }
+  .topbar .meta { font-size: 11px; color: var(--text-muted); }
+  .topbar .meta .tag { background: var(--primary-light); color: var(--primary-dark); padding: 2px 10px; border-radius: 12px; font-weight: 600; }
+
+  /* -- Main two-column area -- */
+  .main-layout {
+    display: flex;
+    gap: 20px;
+    padding: 16px 20px;
+    align-items: flex-start;
   }
-  .header h1 span { color: var(--primary-dark); }
-  .header .sub {
+
+  /* ===== LEFT PANEL (320px) ===== */
+  .left-panel {
+    width: 320px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+  }
+  .card h3 {
+    font-size: 13px;
+    font-weight: 700;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  /* Mini calendar */
+  .mini-cal { text-align: center; }
+  .mini-cal .cal-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 10px;
+    font-weight: 700; font-size: 14px;
+  }
+  .mini-cal .cal-header button {
+    width: 28px; height: 28px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--surface);
+    cursor: pointer;
     font-size: 14px;
     color: var(--text-muted);
-    max-width: 580px;
-    margin: 8px auto 18px;
-    line-height: 1.6;
   }
-  .badge-row {
-    display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;
+  .mini-cal .weekdays {
+    display: grid; grid-template-columns: repeat(7,1fr);
+    font-size: 10px; font-weight: 700; color: var(--text-light);
+    text-transform: uppercase; margin-bottom: 4px;
   }
-  .badge {
-    background: var(--bg);
-    color: var(--primary-dark);
-    font-size: 11px; font-weight: 600;
-    padding: 5px 14px;
-    border-radius: 20px;
-    border: 1px solid var(--border);
+  .mini-cal .days {
+    display: grid; grid-template-columns: repeat(7,1fr);
+    gap: 2px;
   }
+  .mini-cal .day-btn {
+    width: 100%;
+    aspect-ratio: 1;
+    border: none;
+    background: transparent;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+  .mini-cal .day-btn:hover { background: var(--primary-light); }
+  .mini-cal .day-btn.other  { color:#ccc; }
+  .mini-cal .day-btn.today { background: var(--primary-dark); color: #fff; font-weight: 800; }
+  .mini-cal .day-btn.booked { color: var(--primary-dark); font-weight: 800; }
+  .mini-cal .day-btn .count {
+    font-size: 8px; font-weight: 700; color: var(--primary-dark); margin-top: -2px;
+  }
+  .mini-cal .day-btn.today .count { color: #fff; }
 
-  /* ---- Nav bar (simulated) ---- */
-  .nav-bar {
-    background: var(--surface);
-    border-bottom: 1px solid var(--border);
-    padding: 10px 24px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    max-width: var(--max-w);
-    margin: 0 auto;
-  }
-  .nav-brand {
-    font-weight: 700;
-    font-size: 16px;
-    color: var(--primary-dark);
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .nav-brand .dot {
-    width: 10px; height: 10px;
-    background: var(--primary);
+  /* Stats */
+  .stats .big-num { font-size: 28px; font-weight: 800; color: var(--primary-dark); }
+  .stats .sub-row { display: flex; gap: 8px; margin-top: 8px; }
+  .stats .sub-stat { flex: 1; text-align: center; padding: 10px 6px; border-radius: var(--radius); }
+  .stats .sub-stat.green { background: #ECFDF5; }
+  .stats .sub-stat.amber { background: #FFFBEB; }
+  .stats .sub-stat.red   { background: #FEF2F2; }
+  .stats .sub-stat .val { font-size: 18px; font-weight: 800; }
+  .stats .sub-stat .lbl { font-size: 10px; color: var(--text-muted); }
+  .stats .sub-stat.green .val { color: #059669; }
+  .stats .sub-stat.amber .val { color: #D97706; }
+  .stats .sub-stat.red   .val { color: #DC2626; }
+
+  /* Staff */
+  .staff-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; }
+  .staff-avatar {
+    width: 32px; height: 32px;
     border-radius: 50%;
-    display: inline-block;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; font-weight: 700;
+    flex-shrink: 0;
   }
-  .nav-info {
-    font-size: 12px;
-    color: var(--text-muted);
+  .staff-avatar.on { background: #ECFDF5; color: #059669; }
+  .staff-avatar.off { background: #FEF2F2; color: #DC2626; }
+  .staff-info { flex:1; min-width:0; }
+  .staff-info .name { font-size:13px; font-weight:700; }
+  .staff-info .time { font-size:11px; color: var(--text-muted); }
+  .staff-badge {
+    font-size: 10px; font-weight: 700; padding: 3px 10px; border-radius: 10px;
+  }
+  .staff-badge.on { background: #ECFDF5; color: #059669; }
+  .staff-badge.off { background: #FEF2F2; color: #DC2626; }
+
+  /* ===== RIGHT PANEL — Room Grid ===== */
+  .right-panel {
+    flex: 1;
+    min-width: 0;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+  .grid-scroll {
+    overflow-x: auto;
+    overflow-y: auto;
+    max-height: 620px;
+  }
+  .grid-inner {
     display: flex;
-    align-items: center;
-    gap: 14px;
-  }
-  .nav-info .tag {
-    background: var(--primary-light);
-    color: var(--primary-dark);
-    padding: 3px 10px;
-    border-radius: 12px;
-    font-size: 11px;
-    font-weight: 600;
+    min-width: 680px;
   }
 
-  /* ---- Sections ---- */
-  section { padding: 40px 0; }
-
-  .section-title {
-    font-size: 20px;
+  /* Time column (left, 52px) */
+  .time-col {
+    width: 52px;
+    flex-shrink: 0;
+    position: sticky;
+    left: 0;
+    z-index: 10;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+  }
+  .time-col .header-spacer {
+    height: 42px;
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+  }
+  .time-slot-cell {
+    height: 80px;
+    position: relative;
+    border-bottom: 1px solid var(--border);
+  }
+  .time-slot-cell .label {
+    position: absolute;
+    top: 2px;
+    right: 6px;
+    font-size: 10px;
     font-weight: 700;
     color: var(--text);
-    margin-bottom: 6px;
-  }
-  .section-sub {
-    font-size: 13px;
-    color: var(--text-muted);
-    margin-bottom: 24px;
-  }
-
-  /* ---- Stats row ---- */
-  .stat-row {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-    gap: 14px;
-    margin-bottom: 40px;
-  }
-  .stat {
     background: var(--surface);
-    border: 1px solid var(--border-light);
-    border-radius: var(--radius);
-    padding: 20px 16px;
-    text-align: center;
+    padding: 0 2px;
+    line-height: 1;
   }
-  .stat-num {
-    font-size: 30px;
-    font-weight: 800;
-    color: var(--primary-dark);
-    line-height: 1.1;
-  }
-  .stat-label {
-    font-size: 11px;
-    color: var(--text-light);
-    text-transform: uppercase;
-    letter-spacing: 0.6px;
-    margin-top: 4px;
-  }
+  .time-slot-cell .label.half { color: var(--text-muted); }
 
-  /* ---- Summary ---- */
+  /* Room column */
+  .room-col {
+    flex: 1;
+    min-width: 160px;
+    border-right: 1px solid var(--border);
+    position: relative;
+  }
+  .room-col:last-child { border-right: none; }
+  .room-col .room-header {
+    height: 42px;
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 13px;
+    color: var(--text);
+  }
+  .room-col .room-canvas {
+    position: relative;
+  }
+  .room-col .room-canvas .grid-line {
+    height: 80px;
+    border-bottom: 1px solid var(--border);
+  }
+  .room-col .room-canvas .grid-line:last-child { border-bottom: none; }
+
+  /* Appointment card (absolutely positioned) */
+  .appt-card {
+    position: absolute;
+    left: 2px;
+    right: 2px;
+    background: #fff;
+    border: 1px solid rgba(200,142,167,0.3);
+    border-left: 4px solid var(--primary);
+    border-radius: 10px;
+    padding: 8px 10px;
+    cursor: pointer;
+    font-size: 11px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: box-shadow 0.15s;
+    z-index: 5;
+  }
+  .appt-card:hover { box-shadow: 0 2px 12px rgba(0,0,0,0.1); }
+  .appt-card .top-row { display: flex; justify-content: space-between; align-items: flex-start; }
+  .appt-card .time-range { font-size: 10px; font-weight: 700; color: var(--primary-dark); }
+  .appt-card .status-pill { font-size: 8px; font-weight: 700; padding: 1px 6px; border-radius: 8px; }
+  .appt-card .status-pill.confirmed { background: #DBEAFE; color: #1D4ED8; }
+  .appt-card .status-pill.attended  { background: #F3F4F6; color: #6B7280; }
+  .appt-card .client-name { font-weight: 800; font-size: 13px; margin-top: 2px; }
+  .appt-card .treatment-name { font-weight: 600; color: #374151; margin-top: 2px; }
+  .appt-card .meta-row { display: flex; gap: 6px; margin-top: 4px; }
+  .appt-card .meta-tag { font-size: 10px; background: #F9FAFB; padding: 1px 6px; border-radius: 4px; color: var(--text-muted); }
+  .appt-card .vip-tag { font-size: 9px; background: #FFF7ED; color: #C2410C; padding: 1px 6px; border-radius: 8px; font-weight: 700; }
+  .appt-card .alert-tag { font-size: 9px; background: #FEF2F2; color: #DC2626; padding: 1px 6px; border-radius: 8px; font-weight: 700; }
+
+  /* Narrow card */
+  .appt-card.narrow { padding: 6px 8px; }
+  .appt-card.narrow .client-name { font-size: 11px; }
+
+  /* -- Summary section -- */
   .summary {
     background: var(--surface);
     border-left: 4px solid var(--primary-dark);
-    padding: 18px 24px;
+    padding: 16px 22px;
     border-radius: 0 var(--radius) var(--radius) 0;
-    font-size: 13.5px;
+    font-size: 13px;
     line-height: 1.75;
     color: var(--text-muted);
-    margin-bottom: 40px;
+    margin: 0 20px 16px;
   }
   .summary strong { color: var(--text); }
 
-  /* ================================================================ */
-  /*  APPOINTMENT CALENDAR — the core showcase  */
-  /* ================================================================ */
-  .calendar-shell {
+  /* -- Links -- */
+  .link-row {
+    display: flex; gap: 14px; padding: 0 20px 20px; flex-wrap: wrap;
+  }
+  .link {
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: var(--radius);
-    overflow: hidden;
-    box-shadow: var(--shadow-sm);
-  }
-  .cal-toolbar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 16px 20px;
-    border-bottom: 1px solid var(--border-light);
-    flex-wrap: wrap;
-    gap: 12px;
-  }
-  .cal-toolbar .date-nav {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-  }
-  .cal-toolbar .date-nav .arrow {
-    width: 32px; height: 32px;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    background: var(--surface);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    font-size: 14px;
-    color: var(--text-muted);
-    user-select: none;
-  }
-  .cal-toolbar .date-nav .date-label {
-    font-weight: 700;
-    font-size: 15px;
-    color: var(--text);
-    min-width: 140px;
-    text-align: center;
-  }
-  .cal-toolbar .actions {
-    display: flex;
-    gap: 8px;
-  }
-  .btn-sm {
-    padding: 8px 16px;
-    border-radius: 8px;
-    font-size: 12px;
-    font-weight: 600;
-    cursor: pointer;
-    border: 1px solid var(--border);
-    background: var(--surface);
-    color: var(--text-muted);
-    user-select: none;
-  }
-  .btn-sm.primary {
-    background: var(--primary-dark);
-    color: #fff;
-    border-color: var(--primary-dark);
-  }
-
-  /* Day-of-week header */
-  .cal-weekdays {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    text-align: center;
-    font-size: 11px;
-    font-weight: 700;
-    color: var(--text-light);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    padding: 10px 20px;
-    border-bottom: 1px solid var(--border-light);
-    background: var(--bg);
-  }
-
-  /* Calendar grid */
-  .cal-grid {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    gap: 0;
-  }
-  .cal-cell {
-    min-height: 100px;
-    border-right: 1px solid var(--border-light);
-    border-bottom: 1px solid var(--border-light);
-    padding: 6px 8px;
-    font-size: 12px;
-    cursor: default;
-    position: relative;
-    background: var(--surface);
-  }
-  .cal-cell:nth-child(7n) { border-right: none; }
-  .cal-cell .day-num {
-    font-weight: 600;
-    color: var(--text);
-    margin-bottom: 4px;
-  }
-  .cal-cell.other-month .day-num {
-    color: #CCC;
-  }
-  .cal-cell.today {
-    background: #FDF6F9;
-  }
-  .cal-cell.today .day-num {
-    background: var(--primary-dark);
-    color: #fff;
-    width: 22px; height: 22px;
-    border-radius: 50%;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  /* Appointment chips inside calendar cells */
-  .cal-chip {
-    display: block;
-    font-size: 10px;
-    padding: 2px 6px;
-    border-radius: 4px;
-    margin-bottom: 2px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    font-weight: 500;
-    line-height: 1.5;
-    cursor: default;
-  }
-  .cal-chip.confirmed { background: #EDF3F8; color: #3B6D93; }
-  .cal-chip.attended  { background: var(--green-bg); color: #3D6E4E; }
-  .cal-chip.cancelled { background: #F5F0F0; color: #9B8B8B; text-decoration: line-through; }
-  .cal-chip.more {
-    background: none;
-    color: var(--text-muted);
-    font-style: italic;
-    font-weight: 400;
-    text-align: center;
-  }
-
-  /* ---- Appointments list (timeline) ---- */
-  .appt-list-section {
-    margin-top: 20px;
-  }
-  .appt-list-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 12px;
-  }
-  .appt-list-header h3 {
-    font-size: 16px;
-    font-weight: 700;
-    color: var(--text);
-  }
-  .appt-list-header .count {
-    font-size: 12px;
-    color: var(--text-muted);
-    background: var(--bg);
-    padding: 4px 12px;
-    border-radius: 20px;
-  }
-
-  .appt-table {
-    width: 100%;
-    border-collapse: collapse;
-    background: var(--surface);
-    border: 1px solid var(--border-light);
-    border-radius: var(--radius);
-    overflow: hidden;
-    font-size: 13px;
-  }
-  .appt-table thead th {
-    background: var(--bg);
-    text-align: left;
-    padding: 12px 16px;
-    font-weight: 700;
-    color: var(--text-light);
-    font-size: 10.5px;
-    text-transform: uppercase;
-    letter-spacing: 0.6px;
-    border-bottom: 2px solid var(--border);
-  }
-  .appt-table tbody td {
-    padding: 14px 16px;
-    border-bottom: 1px solid var(--border-light);
-    vertical-align: middle;
-  }
-  .appt-table tbody tr:last-child td { border-bottom: none; }
-  .appt-table tbody tr:hover { background: #FEFCFC; }
-
-  .status-dot {
-    display: inline-block;
-    width: 8px; height: 8px;
-    border-radius: 50%;
-    margin-right: 6px;
-  }
-  .status-dot.confirmed { background: var(--blue); }
-  .status-dot.attended  { background: var(--green); }
-  .status-dot.cancelled { background: #C0B0B0; }
-
-  .pill {
-    display: inline-block;
-    padding: 2px 8px;
-    border-radius: 10px;
-    font-size: 10.5px;
-    font-weight: 600;
-  }
-  .pill.vip     { background: #FFF8E1; color: #9B7B2C; }
-  .pill.warning { background: var(--red-bg); color: var(--red); }
-  .pill.source  { background: var(--primary-light); color: var(--primary-dark); }
-
-  .time-slot {
-    font-family: 'SF Mono', 'Cascadia Code', 'Consolas', monospace;
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--text);
-  }
-  .time-slot small {
-    font-weight: 400;
-    color: var(--text-muted);
-  }
-
-  /* ---- Tech stack ---- */
-  .tech-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 16px;
-  }
-  .tech-card {
-    background: var(--surface);
-    border: 1px solid var(--border-light);
-    border-radius: var(--radius);
-    padding: 18px 20px;
-  }
-  .tech-card h4 {
-    font-size: 13px;
-    font-weight: 700;
-    color: var(--primary-dark);
-    margin-bottom: 4px;
-  }
-  .tech-card p {
-    font-size: 12px;
-    color: var(--text-muted);
-    line-height: 1.5;
-  }
-
-  /* ---- Features ---- */
-  .feature-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 14px;
-  }
-  .feature {
-    background: var(--surface);
-    border: 1px solid var(--border-light);
-    border-radius: var(--radius);
-    padding: 18px 20px;
-  }
-  .feature h4 {
-    font-size: 13px;
-    font-weight: 700;
-    color: var(--text);
-    margin-bottom: 4px;
-  }
-  .feature p {
-    font-size: 12px;
-    color: var(--text-muted);
-    line-height: 1.55;
-  }
-
-  /* ---- Links ---- */
-  .links-row {
-    display: flex;
-    gap: 16px;
-    flex-wrap: wrap;
-  }
-  .link-card {
-    background: var(--surface);
-    border: 1px solid var(--border-light);
-    border-radius: var(--radius);
-    padding: 16px 22px;
+    padding: 14px 18px;
     text-decoration: none;
     color: var(--text);
     flex: 1;
-    min-width: 220px;
-    transition: box-shadow 0.2s;
+    min-width: 180px;
+    font-size: 12px;
   }
-  .link-card:hover {
-    box-shadow: var(--shadow-md);
-  }
-  .link-card .label {
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    color: var(--text-light);
-    margin-bottom: 4px;
-  }
-  .link-card .value {
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--primary-dark);
-    word-break: break-all;
-  }
+  .link .lbl { font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-light); margin-bottom: 2px; }
+  .link .val { font-weight: 600; color: var(--primary-dark); word-break: break-all; }
+  .link:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
 
-  /* ---- Footer ---- */
   footer {
-    text-align: center;
-    padding: 28px 24px;
-    font-size: 11px;
-    color: var(--text-muted);
-    border-top: 1px solid var(--border-light);
-    margin-top: 40px;
+    text-align: center; padding: 22px 20px; font-size: 11px; color: var(--text-muted);
+    border-top: 1px solid var(--border); margin: 0 20px;
   }
   footer a { color: var(--primary-dark); text-decoration: none; font-weight: 600; }
 
-  @media (max-width: 700px) {
-    .cal-cell { min-height: 68px; padding: 4px 5px; }
-    .cal-chip { font-size: 9px; padding: 1px 4px; }
-    .cal-weekdays { font-size: 10px; padding: 8px 10px; }
-    .cal-toolbar { padding: 12px 14px; }
-    .appt-table { font-size: 11px; }
-    .appt-table thead th,
-    .appt-table tbody td { padding: 10px 8px; }
-    .header { padding: 32px 16px 28px; }
+  @media (max-width: 900px) {
+    .main-layout { flex-direction: column; }
+    .left-panel { width: 100%; flex-direction: row; flex-wrap: wrap; }
+    .left-panel .card { flex: 1; min-width: 200px; }
   }
 </style>
 </head>
 <body>
 
-<!-- ================================================================ -->
-<!-- HEADER -->
-<!-- ================================================================ -->
-<div class="header">
-  <h1><span>Salon Cloud</span> &mdash; Full-Stack PWA Salon Management System</h1>
-  <p class="sub">
-    Independently designed and built for <strong>YULI Beauty Salon</strong> (Hong Kong).
-    Replaced paper-based operations with a complete digital workflow.
-    <strong>HK$0/month</strong> operating cost using free cloud tiers.
-  </p>
-  <div class="badge-row">
-    <span class="badge">React 18</span>
-    <span class="badge">Vite</span>
-    <span class="badge">Tailwind CSS</span>
-    <span class="badge">Supabase</span>
-    <span class="badge">PostgreSQL</span>
-    <span class="badge">RLS Security</span>
-    <span class="badge">Vercel CI/CD</span>
-    <span class="badge">PWA</span>
+<div class="shell">
+
+  <!-- Top bar -->
+  <div class="topbar">
+    <div class="brand"><span class="dot"></span>Salon Cloud</div>
+    <div class="meta">27 June 2026 &nbsp; <span class="tag">Live Demo</span></div>
   </div>
-</div>
 
-<!-- Simulated app nav bar -->
-<div class="nav-bar">
-  <div class="nav-brand"><span class="dot"></span> Salon Cloud</div>
-  <div class="nav-info">
-    <span>27 June 2026</span>
-    <span class="tag">Demo</span>
-  </div>
-</div>
-
-<div class="container">
-
-  <!-- ================================================================ -->
-  <!-- STATS -->
-  <!-- ================================================================ -->
-  <section style="padding-bottom: 0;">
-    <div class="stat-row">
-      <div class="stat"><div class="stat-num">15</div><div class="stat-label">Pages</div></div>
-      <div class="stat"><div class="stat-num">11</div><div class="stat-label">DB Tables</div></div>
-      <div class="stat"><div class="stat-num">20+</div><div class="stat-label">RLS Policies</div></div>
-      <div class="stat"><div class="stat-num">15+</div><div class="stat-label">RPC Functions</div></div>
-      <div class="stat"><div class="stat-num">~7,000</div><div class="stat-label">Lines of Code</div></div>
-      <div class="stat"><div class="stat-num">HK$0</div><div class="stat-label">Monthly Cost</div></div>
-    </div>
-  </section>
-
-  <!-- ================================================================ -->
-  <!-- SUMMARY -->
-  <!-- ================================================================ -->
+  <!-- Summary -->
+  <div style="padding-top:16px;"></div>
   <div class="summary">
-    <strong>Project Summary</strong> &mdash; Independently designed, built, and deployed a complete Progressive Web App for a real Hong Kong beauty salon. The system handles clients, treatments, appointment booking with 3D collision detection, installment payment tracking, refunds, revenue reports, and staff scheduling. Built with React 18 + Vite on the frontend, Supabase (PostgreSQL) on the backend, and deployed via Vercel CI/CD. All at zero monthly cost using free cloud tiers.
+    <strong>Salon Cloud</strong> &mdash; Full-stack PWA salon management system. Independently designed and built for <strong>YULI Beauty Salon</strong> (Hong Kong). Replaced paper + WhatsApp operations with a complete digital workflow. <strong>HK$0/month</strong> operating cost (Supabase Free + Vercel Hobby).
   </div>
 
-  <!-- ================================================================ -->
-  <!-- APPOINTMENT CALENDAR — the core showcase -->
-  <!-- ================================================================ -->
-  <section>
-    <div class="section-title">Appointment Calendar</div>
-    <div class="section-sub">Static demo with mock data — showing the real UI layout and interaction patterns from the production app.</div>
+  <!-- ============================================================ -->
+  <!-- TWO-PANEL LAYOUT — matches production DailyAppointmentsPage -->
+  <!-- ============================================================ -->
+  <div class="main-layout">
 
-    <div class="calendar-shell" id="calendarRoot">
-      <!-- Rendered by JS below -->
+    <!-- ===== LEFT PANEL: Calendar + Stats + Staff ===== -->
+    <div class="left-panel">
+
+      <!-- Mini calendar card -->
+      <div class="card mini-cal" id="miniCal">
+        <div class="cal-header">
+          <button id="calPrev">&lsaquo;</button>
+          <span id="calMonthLabel">June 2026</span>
+          <button id="calNext">&rsaquo;</button>
+        </div>
+        <div class="weekdays"><span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span><span>Su</span></div>
+        <div class="days" id="calDays"></div>
+      </div>
+
+      <!-- Stats card -->
+      <div class="card stats">
+        <h3>Today's Stats</h3>
+        <div class="big-num" id="statTotal">10</div>
+        <div style="font-size:10px;color:var(--text-muted);">total appointments</div>
+        <div class="sub-row">
+          <div class="sub-stat green"><div class="val" id="statAttended">3</div><div class="lbl">Attended</div></div>
+          <div class="sub-stat amber"><div class="val" id="statPending">6</div><div class="lbl">Confirmed</div></div>
+          <div class="sub-stat red"><div class="val" id="statNoShow">1</div><div class="lbl">No-show</div></div>
+        </div>
+      </div>
+
+      <!-- Staff on duty card -->
+      <div class="card">
+        <h3>Today's Staff <span style="font-weight:400;color:var(--text-muted);">(5)</span></h3>
+        <div style="margin-bottom:6px;">
+          <div style="font-size:10px;font-weight:700;color:#059669;text-transform:uppercase;letter-spacing:0.5px;">On Duty (3)</div>
+          <div class="staff-row">
+            <div class="staff-avatar on">A</div>
+            <div class="staff-info"><div class="name">Amy</div></div>
+            <span class="staff-badge on">09:00-18:00</span>
+          </div>
+          <div class="staff-row">
+            <div class="staff-avatar on">B</div>
+            <div class="staff-info"><div class="name">Betty</div></div>
+            <span class="staff-badge on">10:00-19:00</span>
+          </div>
+          <div class="staff-row">
+            <div class="staff-avatar on">C</div>
+            <div class="staff-info"><div class="name">Candy</div></div>
+            <span class="staff-badge on">11:00-20:00</span>
+          </div>
+        </div>
+        <div>
+          <div style="font-size:10px;font-weight:700;color:#DC2626;text-transform:uppercase;letter-spacing:0.5px;">Off (2)</div>
+          <div class="staff-row" style="opacity:0.6;">
+            <div class="staff-avatar off">D</div>
+            <div class="staff-info"><div class="name">Daisy</div></div>
+            <span class="staff-badge off">Day off</span>
+          </div>
+          <div class="staff-row" style="opacity:0.6;">
+            <div class="staff-avatar off">E</div>
+            <div class="staff-info"><div class="name">Eva</div></div>
+            <span class="staff-badge off">Day off</span>
+          </div>
+        </div>
+      </div>
     </div>
 
-    <!-- Appointment timeline list -->
-    <div class="appt-list-section" id="apptListRoot">
-      <!-- Rendered by JS below -->
+    <!-- ===== RIGHT PANEL: Room time grid ===== -->
+    <div class="right-panel" id="roomGrid">
+      <!-- Rendered by JS -->
     </div>
-  </section>
 
-  <!-- ================================================================ -->
-  <!-- TECH STACK -->
-  <!-- ================================================================ -->
-  <section>
-    <div class="section-title">Technical Stack</div>
-    <div class="section-sub">Every layer chosen for production-grade reliability at zero cost.</div>
-    <div class="tech-grid">
-      <div class="tech-card">
-        <h4>Frontend</h4>
-        <p>React 18, Vite, Tailwind CSS, Flowbite React, React Router v6 (lazy loading, auth guards), Context API, custom hooks</p>
-      </div>
-      <div class="tech-card">
-        <h4>Backend / Database</h4>
-        <p>Supabase (PostgreSQL), Row-Level Security, 15+ SECURITY DEFINER RPC functions, database triggers, CHECK constraints</p>
-      </div>
-      <div class="tech-card">
-        <h4>Authentication</h4>
-        <p>Supabase Auth (JWT + Magic Link), PASSWORD_RECOVERY flow, Custom Claims in JWT app_metadata, session auto-refresh</p>
-      </div>
-      <div class="tech-card">
-        <h4>Deployment</h4>
-        <p>Vercel Edge CDN, Git-push auto-deploy, free Hobby plan, Service Worker v2 (network-first) for PWA offline support</p>
-      </div>
-      <div class="tech-card">
-        <h4>Export & Reports</h4>
-        <p>XLSX (SheetJS) client-side Excel generation, one-click client & sales reports, dormant client auto-detection</p>
-      </div>
-      <div class="tech-card">
-        <h4>PWA</h4>
-        <p>Service Worker v2 (network-first cache strategy), Web App Manifest, iPad "Add to Home Screen" one-tap install</p>
-      </div>
-    </div>
-  </section>
+  </div>
 
-  <!-- ================================================================ -->
-  <!-- KEY FEATURES -->
-  <!-- ================================================================ -->
-  <section>
-    <div class="section-title">Key Features</div>
-    <div class="section-sub">Designed around the real daily workflow of a Hong Kong beauty salon.</div>
-    <div class="feature-grid">
-      <div class="feature">
-        <h4>3D Collision-Check Booking</h4>
-        <p>Real-time conflict detection across staff, room, and equipment dimensions. Visual indicators on DayPicker calendar.</p>
-      </div>
-      <div class="feature">
-        <h4>Installment Payment Tracking</h4>
-        <p>Free-input payment amounts with progress bar (paid / total). Multi-method: Cash, Card, Transfer, PayMe, AlipayHK.</p>
-      </div>
-      <div class="feature">
-        <h4>INSERT-ONLY Activity Log</h4>
-        <p>Tamper-proof audit trail — RLS prohibits UPDATE/DELETE on log records. All money and session changes atomically recorded.</p>
-      </div>
-      <div class="feature">
-        <h4>Refund Workflow</h4>
-        <p>Free-input refund amount with automatic session restoration, mandatory reason, and payment method. Atomically logged.</p>
-      </div>
-      <div class="feature">
-        <h4>WhatsApp Snippet Selector</h4>
-        <p>Smart tag chips with {{variable}} injection, inline CRUD, and one-tap copy for customer communication.</p>
-      </div>
-      <div class="feature">
-        <h4>Excel Export & Dormant Detection</h4>
-        <p>One-click XLSX reports. Auto-detection of clients inactive for 90+ days with WhatsApp quick-action button.</p>
-      </div>
-      <div class="feature">
-        <h4>3-Layer Treatment Deactivation</h4>
-        <p>Block if in use (show who), soft-disable if historical, allow delete only if unused. Prevents data corruption.</p>
-      </div>
-      <div class="feature">
-        <h4>Touch-Friendly Discount Calculator</h4>
-        <p>Slider-based % OFF with live 3-way sync (unit price, discount, package price). Built for iPad with 48px touch targets.</p>
-      </div>
-    </div>
-  </section>
+  <!-- Links -->
+  <div class="link-row" style="padding-top:20px;">
+    <a href="https://salon-cloud-pwa.vercel.app" class="link" target="_blank" rel="noopener">
+      <div class="lbl">Live App</div>
+      <div class="val">salon-cloud-pwa.vercel.app</div>
+    </a>
+    <a href="https://github.com/ManShingYip/salon-cloud-portfolio" class="link" target="_blank" rel="noopener">
+      <div class="lbl">Portfolio Repo (Public)</div>
+      <div class="val">github.com/ManShingYip/salon-cloud-portfolio</div>
+    </a>
+    <a href="https://github.com/ManShingYip/salon-cloud-pwa" class="link" target="_blank" rel="noopener">
+      <div class="lbl">Source Code (Private)</div>
+      <div class="val">github.com/ManShingYip/salon-cloud-pwa</div>
+    </a>
+    <a href="https://linkedin.com/in/man-shing-yip-b5b5473b8" class="link" target="_blank" rel="noopener">
+      <div class="lbl">LinkedIn</div>
+      <div class="val">linkedin.com/in/man-shing-yip-b5b5473b8</div>
+    </a>
+  </div>
 
-  <!-- ================================================================ -->
-  <!-- SECURITY -->
-  <!-- ================================================================ -->
-  <section>
-    <div class="section-title">Security Architecture</div>
-    <div class="section-sub">6-layer defense-in-depth, from browser input validation to database constraints.</div>
-    <div class="feature-grid">
-      <div class="feature">
-        <h4>Layer 1: Authentication</h4>
-        <p>Supabase JWT with Magic Link + PASSWORD_RECOVERY flow. Session auto-refresh with onAuthStateChange guard.</p>
-      </div>
-      <div class="feature">
-        <h4>Layer 2: Authorization</h4>
-        <p>Row-Level Security on all 11 tables. Role-based policies (shop_owner / staff). Custom Claims in JWT app_metadata.</p>
-      </div>
-      <div class="feature">
-        <h4>Layer 3: Data Integrity</h4>
-        <p>CHECK constraints (price &gt; 0, capacity &gt; 0, duration &gt; 0). NOT NULL on critical fields. Frontend + DB dual input validation.</p>
-      </div>
-      <div class="feature">
-        <h4>Layer 4: Audit Trail</h4>
-        <p>activity_log table — INSERT-ONLY. RLS denies UPDATE / DELETE on audit records. All sensitive mutations permanently logged.</p>
-      </div>
-      <div class="feature">
-        <h4>Layer 5: Atomic Operations</h4>
-        <p>15+ SECURITY DEFINER RPC functions. FOR UPDATE row locks prevent race conditions. Idempotent consumption checks.</p>
-      </div>
-      <div class="feature">
-        <h4>Layer 6: Key Management</h4>
-        <p>ANON key (browser-safe, RLS-protected). SECRET key (server-only, never exposed). Git history cleaned, .env in .gitignore.</p>
-      </div>
-    </div>
-  </section>
-
-  <!-- ================================================================ -->
-  <!-- LINKS -->
-  <!-- ================================================================ -->
-  <section>
-    <div class="section-title">Links</div>
-    <div class="links-row">
-      <a href="https://salon-cloud-pwa.vercel.app" class="link-card" target="_blank" rel="noopener">
-        <div class="label">Live Production App</div>
-        <div class="value">salon-cloud-pwa.vercel.app</div>
-      </a>
-      <a href="https://github.com/ManShingYip/salon-cloud-portfolio" class="link-card" target="_blank" rel="noopener">
-        <div class="label">Portfolio Repo (Public)</div>
-        <div class="value">github.com/ManShingYip/salon-cloud-portfolio</div>
-      </a>
-      <a href="https://github.com/ManShingYip/salon-cloud-pwa" class="link-card" target="_blank" rel="noopener">
-        <div class="label">Source Code (Private)</div>
-        <div class="value">github.com/ManShingYip/salon-cloud-pwa</div>
-      </a>
-      <a href="https://linkedin.com/in/man-shing-yip-b5b5473b8" class="link-card" target="_blank" rel="noopener">
-        <div class="label">LinkedIn Profile</div>
-        <div class="value">linkedin.com/in/man-shing-yip-b5b5473b8</div>
-      </a>
-    </div>
-  </section>
-
+  <footer>
+    Built by <a href="https://linkedin.com/in/man-shing-yip-b5b5473b8" target="_blank" rel="noopener">Man Shing Yip</a> &middot; June 2026 &middot; React 18 &middot; Supabase &middot; PostgreSQL &middot; Vercel &middot; HK$0/month
+  </footer>
 </div>
 
-<footer>
-  <p>Built by <a href="https://linkedin.com/in/man-shing-yip-b5b5473b8" target="_blank" rel="noopener">Man Shing Yip</a> &middot; June 2026 &middot; React 18 &middot; Supabase &middot; PostgreSQL &middot; Vercel &middot; HK$0/month</p>
-</footer>
-
-<!-- ================================================================ -->
-<!-- STATIC DATA + RENDER LOGIC -->
-<!-- ================================================================ -->
+<!-- ============================================================ -->
 <script>
-(function() {
-  // ---- Mock appointment data ----
-  var appointments = [
-    { id:1,  client:"Chan Siu Man",    member:"Y-00001", treatment:"Deep Cleanse Facial",           start:"10:00", end:"11:30", staff:"Amy",   room:"Room A",  status:"confirmed",  vip:true,  sensitive:false },
-    { id:2,  client:"Lee Tai",         member:"Y-00002", treatment:"Collagen Infusion",             start:"10:30", end:"11:30", staff:"Betty",  room:"VIP Room", status:"attended",   vip:false, sensitive:false },
-    { id:3,  client:"Cheung Siu Man",  member:"Y-00003", treatment:"Laser Spot Removal",            start:"11:00", end:"12:30", staff:"Amy",    room:"Room B",   status:"confirmed",  vip:false, sensitive:true  },
-    { id:4,  client:"Wong Tai",        member:"Y-00004", treatment:"Back Massage",                  start:"14:00", end:"15:00", staff:"Candy",  room:"Room A",   status:"cancelled",  vip:false, sensitive:false },
-    { id:5,  client:"Chiu Siu Man",    member:"Y-00005", treatment:"Collagen Infusion",             start:"14:30", end:"15:30", staff:"Betty",  room:"VIP Room", status:"confirmed",  vip:true,  sensitive:false },
-    { id:6,  client:"Lam Tai",         member:"Y-00006", treatment:"Deep Cleanse Facial",           start:"15:00", end:"16:30", staff:"Amy",    room:"Room B",   status:"confirmed",  vip:false, sensitive:false },
-    { id:7,  client:"Ho Siu Man",      member:"Y-00007", treatment:"Aromatherapy Massage",          start:"16:00", end:"17:30", staff:"Candy",  room:"Room A",   status:"confirmed",  vip:false, sensitive:false },
-    { id:8,  client:"Ng Tai",          member:"Y-00008", treatment:"Laser Spot Removal",            start:"16:30", end:"18:00", staff:"Betty",  room:"VIP Room", status:"attended",   vip:false, sensitive:true  },
-    { id:9,  client:"Chow Siu Man",    member:"Y-00009", treatment:"Deep Cleanse Facial",           start:"17:00", end:"18:00", staff:"Amy",    room:"Room B",   status:"confirmed",  vip:false, sensitive:false },
-    { id:10, client:"Leung Tai",       member:"Y-00010", treatment:"Back Massage",                  start:"18:00", end:"19:00", staff:"Candy",  room:"Room A",   status:"confirmed",  vip:false, sensitive:false }
+(function(){
+  // ---- Mock data ----
+  var rooms = [
+    { id: 'r1', name: 'Room A' },
+    { id: 'r2', name: 'VIP Room' },
+    { id: 'r3', name: 'Room B' },
+    { id: 'r4', name: 'Room C' }
   ];
 
-  // ---- Build calendar grid (June 2026) ----
-  // June 2026: 1 = Monday, 30 days
-  var today = 27;
-  var daysInMonth = 30;
-  var startDow = 1; // Monday
+  var appointments = [
+    { id:1,  client:"Chan Siu Man",   member:"Y-00001", treatment:"Deep Cleanse Facial",           start:"09:00", end:"10:30", room:"r1", staff:"Amy",   status:"confirmed", vip:true,  sensitive:false, dur:90 },
+    { id:2,  client:"Lee Tai",        member:"Y-00002", treatment:"Collagen Infusion",             start:"10:00", end:"11:00", room:"r2", staff:"Betty",  status:"attended",  vip:false, sensitive:false, dur:60 },
+    { id:3,  client:"Cheung Siu Man", member:"Y-00003", treatment:"Laser Spot Removal",            start:"11:00", end:"12:30", room:"r3", staff:"Amy",    status:"confirmed", vip:false, sensitive:true,  dur:90 },
+    { id:4,  client:"Wong Tai",       member:"Y-00004", treatment:"Back Massage",                  start:"13:00", end:"14:00", room:"r1", staff:"Candy",  status:"no_show",   vip:false, sensitive:false, dur:60 },
+    { id:5,  client:"Chiu Siu Man",   member:"Y-00005", treatment:"Collagen Infusion",             start:"14:00", end:"15:30", room:"r2", staff:"Betty",  status:"confirmed", vip:true,  sensitive:false, dur:90 },
+    { id:6,  client:"Lam Tai",        member:"Y-00006", treatment:"Deep Cleanse Facial",           start:"14:30", end:"15:30", room:"r3", staff:"Amy",    status:"confirmed", vip:false, sensitive:false, dur:60 },
+    { id:7,  client:"Ho Siu Man",     member:"Y-00007", treatment:"Aromatherapy Massage",          start:"15:30", end:"17:00", room:"r1", staff:"Candy",  status:"confirmed", vip:false, sensitive:false, dur:90 },
+    { id:8,  client:"Ng Tai",         member:"Y-00008", treatment:"Laser Spot Removal",            start:"16:00", end:"17:30", room:"r4", staff:"Betty",  status:"attended",  vip:false, sensitive:true,  dur:90 },
+    { id:9,  client:"Chow Siu Man",   member:"Y-00009", treatment:"Deep Cleanse Facial",           start:"17:00", end:"18:00", room:"r2", staff:"Amy",    status:"confirmed", vip:false, sensitive:false, dur:60 },
+    { id:10, client:"Leung Tai",      member:"Y-00010", treatment:"Back Massage",                  start:"18:00", end:"19:00", room:"r3", staff:"Candy",  status:"confirmed", vip:false, sensitive:false, dur:60 }
+  ];
 
-  // Group appointments by day (spread them across the month for demo)
-  var apptByDay = {};
-  // Populate: each appointment gets a day
-  var demoDays = [2,3,5,6,10,13,16,19,23,27];
-  for (var i = 0; i < appointments.length; i++) {
-    var d = demoDays[i];
-    if (!apptByDay[d]) apptByDay[d] = [];
-    apptByDay[d].push(appointments[i]);
+  // ---- Time slots: 08:00 - 20:00, 30-min intervals ----
+  var TIME_SLOTS = [];
+  for (var h = 8; h <= 20; h++) {
+    TIME_SLOTS.push(String(h).padStart(2,'0') + ':00');
+    if (h < 20) TIME_SLOTS.push(String(h).padStart(2,'0') + ':30');
   }
+  var SLOT_HEIGHT = 80; // px per 30min
+  var PX_PER_MIN = SLOT_HEIGHT / 30;
+  var FIRST_SLOT = 8 * 60; // 480 min
 
-  // Calendar rendering
-  var cells = [];
-  // Previous month padding (May 2026 ends on Sunday 31, so Monday=1 => no padding needed?
-  // Actually June 1 2026 is Monday. M T W T F S S. startDow=1 means 0 blank cells before day 1.
-  // But we might want padding from previous month for realism: May has 31 days, ends Sun May 31.
-  // June 1 = Monday => 0 padding cells from May if we start on Monday.
-  // Let's add a couple padding cells for a more natural look
-  var prevMonthDays = 0; // May 30 (Sat), May 31 (Sun) ... actually let's keep it clean
+  function timeToTop(t) {
+    if (!t) return 0;
+    var parts = t.split(':').map(Number);
+    return Math.max(0, (parts[0]*60 + parts[1] - FIRST_SLOT) * PX_PER_MIN);
+  }
+  function durToHeight(d) { return Math.max(40, d * PX_PER_MIN); }
 
-  // Build 6 rows (to cover 30 days starting Monday)
-  var totalCells = 42; // 6 rows x 7 cols
-  var dayCounter = 1;
+  // ---- Render room grid ----
+  var gridHTML = '<div class="grid-scroll"><div class="grid-inner">';
 
-  for (var c = 0; c < totalCells; c++) {
-    var isPadding = (c < prevMonthDays) || (dayCounter > daysInMonth);
-    var dayNum = isPadding ? (c < prevMonthDays ? (31 - prevMonthDays + c + 1) : (dayCounter - daysInMonth)) : dayCounter;
-    var isOtherMonth = isPadding;
-    var isToday = (dayNum === today && !isOtherMonth);
+  // Time column
+  gridHTML += '<div class="time-col"><div class="header-spacer"></div>';
+  TIME_SLOTS.forEach(function(ts) {
+    var isHour = ts.endsWith(':00');
+    gridHTML += '<div class="time-slot-cell">';
+    if (isHour) gridHTML += '<span class="label">' + ts + '</span>';
+    else gridHTML += '<span class="label half">' + ts + '</span>';
+    gridHTML += '</div>';
+  });
+  gridHTML += '</div>';
 
-    var chips = '';
-    if (!isOtherMonth && apptByDay[dayNum]) {
-      var dayAppts = apptByDay[dayNum];
-      var show = dayAppts.slice(0, 2); // max 2 chips per cell
-      for (var a = 0; a < show.length; a++) {
-        var ap = show[a];
-        chips += '<span class="cal-chip ' + ap.status + '">' + ap.start + ' ' + ap.client + '</span>';
+  // Room columns
+  rooms.forEach(function(room) {
+    gridHTML += '<div class="room-col"><div class="room-header">' + room.name + '</div>';
+    gridHTML += '<div class="room-canvas" style="height:' + (TIME_SLOTS.length * SLOT_HEIGHT) + 'px;">';
+
+    // Grid lines
+    TIME_SLOTS.forEach(function() {
+      gridHTML += '<div class="grid-line"></div>';
+    });
+
+    // Appointment cards
+    var roomApps = appointments.filter(function(a) { return a.room === room.id; });
+
+    // Detect overlaps and assign horizontal splits
+    roomApps.sort(function(a,b) { return a.start.localeCompare(b.start); });
+    var overlapGroups = [];
+    var curGroup = [];
+    roomApps.forEach(function(app, i) {
+      if (i === 0) { curGroup = [app]; return; }
+      var groupMaxEnd = Math.max.apply(null, curGroup.map(function(a) {
+        var parts = a.end.split(':').map(Number);
+        return parts[0]*60 + parts[1];
+      }));
+      var appStart = (function() { var p = app.start.split(':').map(Number); return p[0]*60 + p[1]; })();
+      if (appStart < groupMaxEnd) { curGroup.push(app); }
+      else { overlapGroups.push(curGroup); curGroup = [app]; }
+    });
+    if (curGroup.length) overlapGroups.push(curGroup);
+
+    var positioned = [];
+    overlapGroups.forEach(function(group) {
+      var n = group.length;
+      group.forEach(function(app, idx) {
+        positioned.push({ app: app, leftPct: (idx * 100) / n, widthPct: 100 / n });
+      });
+    });
+
+    positioned.forEach(function(p) {
+      var app = p.app;
+      var top = timeToTop(app.start);
+      var h = durToHeight(app.dur);
+      var isNarrow = p.widthPct < 60;
+
+      var statusClass = app.status === 'attended' ? 'bg-gray-50 opacity-60' : app.status === 'no_show' ? 'bg-red-50' : '';
+      var statusLabel = app.status === 'confirmed' ? 'Confirmed' : app.status === 'attended' ? 'Attended' : 'No-show';
+      var statusPillClass = app.status === 'confirmed' ? 'confirmed' : app.status === 'attended' ? 'attended' : '';
+
+      var vipBadge = app.vip ? '<span class="vip-tag">VIP</span>' : '';
+      var alertBadge = app.sensitive ? '<span class="alert-tag">Sensitive</span>' : '';
+
+      gridHTML += '<div class="appt-card' + (isNarrow?' narrow':'') + ' ' + statusClass + '" style="top:' + top + 'px; height:' + h + 'px; left:' + (p.leftPct + 0.5) + '%; width:' + (p.widthPct - 1) + '%;">';
+      gridHTML += '<div>';
+      gridHTML += '<div class="top-row"><span class="time-range">' + app.start + ' - ' + app.end + ' (' + app.dur + 'min)</span><span class="status-pill ' + statusPillClass + '">' + statusLabel + '</span></div>';
+      gridHTML += '<div class="client-name">' + app.client + ' ' + vipBadge + alertBadge + '</div>';
+      if (!isNarrow) {
+        gridHTML += '<div class="treatment-name">' + app.treatment + '</div>';
+        gridHTML += '<div class="meta-row"><span class="meta-tag">' + app.staff + '</span><span class="meta-tag">' + room.name + '</span></div>';
       }
-      if (dayAppts.length > 2) {
-        chips += '<span class="cal-chip more">+' + (dayAppts.length - 2) + ' more</span>';
+      gridHTML += '</div></div>';
+    });
+
+    gridHTML += '</div></div>'; // room-canvas, room-col
+  });
+
+  gridHTML += '</div></div>'; // grid-inner, grid-scroll
+  document.getElementById('roomGrid').innerHTML = gridHTML;
+
+  // ---- Mini calendar ----
+  (function() {
+    var today = 27;
+    var year = 2026, month = 6; // June
+
+    function renderCal() {
+      // First day of month: June 1 2026 = Monday (1)
+      var firstDow = new Date(2026, 5, 1).getDay(); // 0=Sun
+      // Convert to Mon=0
+      var startOffset = firstDow === 0 ? 6 : firstDow - 1;
+
+      var months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+      document.getElementById('calMonthLabel').textContent = months[month-1] + ' ' + year;
+
+      var daysInMonth = new Date(year, month, 0).getDate();
+
+      // Build day cells
+      var html = '';
+      // Padding before day 1
+      for (var i = 0; i < startOffset; i++) {
+        var prevDay = new Date(year, month-1, 0).getDate() - startOffset + i + 1;
+        html += '<button class="day-btn other" disabled>' + prevDay + '</button>';
       }
+      // Month days
+      for (var d = 1; d <= daysInMonth; d++) {
+        var cls = 'day-btn';
+        if (d === today) cls += ' today';
+        // Mark some days as booked
+        var bookedDays = [2,3,5,6,10,13,16,19,23,27];
+        var count = bookedDays.includes(d) ? Math.floor(Math.random()*4)+1 : 0;
+        if (count > 0) cls += ' booked';
+        html += '<button class="' + cls + '">' + d + (count > 0 ? '<span class="count">' + count + '</span>' : '') + '</button>';
+      }
+      document.getElementById('calDays').innerHTML = html;
     }
 
-    var cls = 'cal-cell';
-    if (isOtherMonth) cls += ' other-month';
-    if (isToday) cls += ' today';
+    renderCal();
 
-    cells.push('<div class="' + cls + '"><span class="day-num">' + dayNum + '</span>' + chips + '</div>');
-
-    if (!isPadding) dayCounter++;
-  }
-
-  var weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-  var weekdaysHTML = weekdays.map(function(w) { return '<div>' + w + '</div>'; }).join('');
-
-  var calendarHTML =
-    '<div class="cal-toolbar">' +
-      '<div class="date-nav">' +
-        '<button class="arrow">&lsaquo;</button>' +
-        '<span class="date-label">June 2026</span>' +
-        '<button class="arrow">&rsaquo;</button>' +
-      '</div>' +
-      '<div class="actions">' +
-        '<button class="btn-sm">Today</button>' +
-        '<button class="btn-sm primary">+ New</button>' +
-      '</div>' +
-    '</div>' +
-    '<div class="cal-weekdays">' + weekdaysHTML + '</div>' +
-    '<div class="cal-grid">' + cells.join('') + '</div>';
-
-  document.getElementById('calendarRoot').innerHTML = calendarHTML;
-
-  // ---- Appointment timeline table ----
-  var statusClass = { confirmed: 'confirmed', attended: 'attended', cancelled: 'cancelled' };
-  var statusLabel = { confirmed: 'Confirmed', attended: 'Attended', cancelled: 'Cancelled' };
-
-  var rows = appointments.map(function(a) {
-    var vipBadge = a.vip ? ' <span class="pill vip">VIP</span>' : '';
-    var sensitiveBadge = a.sensitive ? ' <span class="pill warning">Sensitive</span>' : '';
-    return '<tr>' +
-      '<td><span class="time-slot">' + a.start + ' <small>&ndash; ' + a.end + '</small></span></td>' +
-      '<td><strong>' + a.client + '</strong>' + vipBadge + sensitiveBadge + '<br><span style="font-size:11px;color:var(--text-muted)">' + a.member + '</span></td>' +
-      '<td>' + a.treatment + '</td>' +
-      '<td>' + a.staff + '</td>' +
-      '<td>' + a.room + '</td>' +
-      '<td><span class="status-dot ' + statusClass[a.status] + '"></span>' + statusLabel[a.status] + '</td>' +
-      '</tr>';
-  }).join('');
-
-  var tableHTML =
-    '<div class="appt-list-header">' +
-      '<h3>All Appointments</h3>' +
-      '<span class="count">' + appointments.length + ' appointments</span>' +
-    '</div>' +
-    '<table class="appt-table">' +
-      '<thead><tr><th>Time</th><th>Client</th><th>Treatment</th><th>Staff</th><th>Room</th><th>Status</th></tr></thead>' +
-      '<tbody>' + rows + '</tbody>' +
-    '</table>';
-
-  document.getElementById('apptListRoot').innerHTML = tableHTML;
+    document.getElementById('calPrev').onclick = function() {
+      month--; if (month < 1) { month = 12; year--; }
+      renderCal();
+    };
+    document.getElementById('calNext').onclick = function() {
+      month++; if (month > 12) { month = 1; year++; }
+      renderCal();
+    };
+  })();
 })();
 </script>
 
