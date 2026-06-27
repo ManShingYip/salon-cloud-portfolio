@@ -1,201 +1,859 @@
 <!DOCTYPE html>
-<html lang="zh-HK">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Salon Cloud — Appointment Calendar Demo</title>
-<script src="https://cdn.tailwindcss.com"></script>
+<title>Salon Cloud — Full-Stack PWA Salon Management System | Man Shing Yip</title>
+
+<!-- OG Meta Tags for LinkedIn share card -->
+<meta property="og:title" content="Salon Cloud — Full-Stack PWA Salon Management System">
+<meta property="og:description" content="Independently built 15-page PWA for a real Hong Kong beauty salon. React 18 + Supabase + PostgreSQL + Vercel. HK$0/month operating cost.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://salon-cloud-pwa.vercel.app">
+<meta property="og:image" content="https://raw.githubusercontent.com/ManShingYip/salon-cloud-portfolio/main/screenshots/og-card.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="author" content="Man Shing Yip">
+<meta name="description" content="Independent full-stack PWA — React 18 + Supabase + PostgreSQL salon management system with 3D collision-check booking, installment payments, RLS security. Built for YULI Beauty Salon at HK$0/month.">
+
+<style>
+  :root {
+    --primary: #C88EA7;
+    --primary-dark: #9B6B82;
+    --primary-light: #F5EBF0;
+    --bg: #FEFAF6;
+    --surface: #FFFFFF;
+    --text: #2D2D2D;
+    --text-muted: #6B6B6B;
+    --text-light: #8B7E8B;
+    --border: #E8E0E0;
+    --border-light: #F0E8E8;
+    --green: #6B9B7D;
+    --green-bg: #EDF7F0;
+    --amber: #D4A853;
+    --amber-bg: #FDF8EE;
+    --red: #D4736A;
+    --red-bg: #FDF0EE;
+    --blue: #5B8DB8;
+    --blue-bg: #EDF3F8;
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.04);
+    --shadow-md: 0 4px 16px rgba(0,0,0,0.06);
+    --radius: 10px;
+    --max-w: 1060px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'SF Pro Display', 'PingFang TC', 'Microsoft YaHei', 'Noto Sans HK', sans-serif;
+    background: #FAFAFA;
+    color: var(--text);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .container { max-width: var(--max-w); margin: 0 auto; padding: 0 24px; }
+
+  /* ---- Header ---- */
+  .header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 48px 24px 40px;
+    text-align: center;
+  }
+  .header h1 {
+    font-size: clamp(26px, 4vw, 36px);
+    font-weight: 800;
+    color: var(--text);
+    letter-spacing: -0.5px;
+  }
+  .header h1 span { color: var(--primary-dark); }
+  .header .sub {
+    font-size: 14px;
+    color: var(--text-muted);
+    max-width: 580px;
+    margin: 8px auto 18px;
+    line-height: 1.6;
+  }
+  .badge-row {
+    display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;
+  }
+  .badge {
+    background: var(--bg);
+    color: var(--primary-dark);
+    font-size: 11px; font-weight: 600;
+    padding: 5px 14px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+  }
+
+  /* ---- Nav bar (simulated) ---- */
+  .nav-bar {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 10px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    max-width: var(--max-w);
+    margin: 0 auto;
+  }
+  .nav-brand {
+    font-weight: 700;
+    font-size: 16px;
+    color: var(--primary-dark);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .nav-brand .dot {
+    width: 10px; height: 10px;
+    background: var(--primary);
+    border-radius: 50%;
+    display: inline-block;
+  }
+  .nav-info {
+    font-size: 12px;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .nav-info .tag {
+    background: var(--primary-light);
+    color: var(--primary-dark);
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+
+  /* ---- Sections ---- */
+  section { padding: 40px 0; }
+
+  .section-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 6px;
+  }
+  .section-sub {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-bottom: 24px;
+  }
+
+  /* ---- Stats row ---- */
+  .stat-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 14px;
+    margin-bottom: 40px;
+  }
+  .stat {
+    background: var(--surface);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius);
+    padding: 20px 16px;
+    text-align: center;
+  }
+  .stat-num {
+    font-size: 30px;
+    font-weight: 800;
+    color: var(--primary-dark);
+    line-height: 1.1;
+  }
+  .stat-label {
+    font-size: 11px;
+    color: var(--text-light);
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    margin-top: 4px;
+  }
+
+  /* ---- Summary ---- */
+  .summary {
+    background: var(--surface);
+    border-left: 4px solid var(--primary-dark);
+    padding: 18px 24px;
+    border-radius: 0 var(--radius) var(--radius) 0;
+    font-size: 13.5px;
+    line-height: 1.75;
+    color: var(--text-muted);
+    margin-bottom: 40px;
+  }
+  .summary strong { color: var(--text); }
+
+  /* ================================================================ */
+  /*  APPOINTMENT CALENDAR — the core showcase  */
+  /* ================================================================ */
+  .calendar-shell {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+  }
+  .cal-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border-light);
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .cal-toolbar .date-nav {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .cal-toolbar .date-nav .arrow {
+    width: 32px; height: 32px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 14px;
+    color: var(--text-muted);
+    user-select: none;
+  }
+  .cal-toolbar .date-nav .date-label {
+    font-weight: 700;
+    font-size: 15px;
+    color: var(--text);
+    min-width: 140px;
+    text-align: center;
+  }
+  .cal-toolbar .actions {
+    display: flex;
+    gap: 8px;
+  }
+  .btn-sm {
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text-muted);
+    user-select: none;
+  }
+  .btn-sm.primary {
+    background: var(--primary-dark);
+    color: #fff;
+    border-color: var(--primary-dark);
+  }
+
+  /* Day-of-week header */
+  .cal-weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    text-align: center;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-light);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 10px 20px;
+    border-bottom: 1px solid var(--border-light);
+    background: var(--bg);
+  }
+
+  /* Calendar grid */
+  .cal-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 0;
+  }
+  .cal-cell {
+    min-height: 100px;
+    border-right: 1px solid var(--border-light);
+    border-bottom: 1px solid var(--border-light);
+    padding: 6px 8px;
+    font-size: 12px;
+    cursor: default;
+    position: relative;
+    background: var(--surface);
+  }
+  .cal-cell:nth-child(7n) { border-right: none; }
+  .cal-cell .day-num {
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+  .cal-cell.other-month .day-num {
+    color: #CCC;
+  }
+  .cal-cell.today {
+    background: #FDF6F9;
+  }
+  .cal-cell.today .day-num {
+    background: var(--primary-dark);
+    color: #fff;
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Appointment chips inside calendar cells */
+  .cal-chip {
+    display: block;
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    margin-bottom: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-weight: 500;
+    line-height: 1.5;
+    cursor: default;
+  }
+  .cal-chip.confirmed { background: #EDF3F8; color: #3B6D93; }
+  .cal-chip.attended  { background: var(--green-bg); color: #3D6E4E; }
+  .cal-chip.cancelled { background: #F5F0F0; color: #9B8B8B; text-decoration: line-through; }
+  .cal-chip.more {
+    background: none;
+    color: var(--text-muted);
+    font-style: italic;
+    font-weight: 400;
+    text-align: center;
+  }
+
+  /* ---- Appointments list (timeline) ---- */
+  .appt-list-section {
+    margin-top: 20px;
+  }
+  .appt-list-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+  }
+  .appt-list-header h3 {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .appt-list-header .count {
+    font-size: 12px;
+    color: var(--text-muted);
+    background: var(--bg);
+    padding: 4px 12px;
+    border-radius: 20px;
+  }
+
+  .appt-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--surface);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius);
+    overflow: hidden;
+    font-size: 13px;
+  }
+  .appt-table thead th {
+    background: var(--bg);
+    text-align: left;
+    padding: 12px 16px;
+    font-weight: 700;
+    color: var(--text-light);
+    font-size: 10.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    border-bottom: 2px solid var(--border);
+  }
+  .appt-table tbody td {
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--border-light);
+    vertical-align: middle;
+  }
+  .appt-table tbody tr:last-child td { border-bottom: none; }
+  .appt-table tbody tr:hover { background: #FEFCFC; }
+
+  .status-dot {
+    display: inline-block;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    margin-right: 6px;
+  }
+  .status-dot.confirmed { background: var(--blue); }
+  .status-dot.attended  { background: var(--green); }
+  .status-dot.cancelled { background: #C0B0B0; }
+
+  .pill {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 10.5px;
+    font-weight: 600;
+  }
+  .pill.vip     { background: #FFF8E1; color: #9B7B2C; }
+  .pill.warning { background: var(--red-bg); color: var(--red); }
+  .pill.source  { background: var(--primary-light); color: var(--primary-dark); }
+
+  .time-slot {
+    font-family: 'SF Mono', 'Cascadia Code', 'Consolas', monospace;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text);
+  }
+  .time-slot small {
+    font-weight: 400;
+    color: var(--text-muted);
+  }
+
+  /* ---- Tech stack ---- */
+  .tech-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 16px;
+  }
+  .tech-card {
+    background: var(--surface);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius);
+    padding: 18px 20px;
+  }
+  .tech-card h4 {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--primary-dark);
+    margin-bottom: 4px;
+  }
+  .tech-card p {
+    font-size: 12px;
+    color: var(--text-muted);
+    line-height: 1.5;
+  }
+
+  /* ---- Features ---- */
+  .feature-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 14px;
+  }
+  .feature {
+    background: var(--surface);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius);
+    padding: 18px 20px;
+  }
+  .feature h4 {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+  .feature p {
+    font-size: 12px;
+    color: var(--text-muted);
+    line-height: 1.55;
+  }
+
+  /* ---- Links ---- */
+  .links-row {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .link-card {
+    background: var(--surface);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius);
+    padding: 16px 22px;
+    text-decoration: none;
+    color: var(--text);
+    flex: 1;
+    min-width: 220px;
+    transition: box-shadow 0.2s;
+  }
+  .link-card:hover {
+    box-shadow: var(--shadow-md);
+  }
+  .link-card .label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-light);
+    margin-bottom: 4px;
+  }
+  .link-card .value {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--primary-dark);
+    word-break: break-all;
+  }
+
+  /* ---- Footer ---- */
+  footer {
+    text-align: center;
+    padding: 28px 24px;
+    font-size: 11px;
+    color: var(--text-muted);
+    border-top: 1px solid var(--border-light);
+    margin-top: 40px;
+  }
+  footer a { color: var(--primary-dark); text-decoration: none; font-weight: 600; }
+
+  @media (max-width: 700px) {
+    .cal-cell { min-height: 68px; padding: 4px 5px; }
+    .cal-chip { font-size: 9px; padding: 1px 4px; }
+    .cal-weekdays { font-size: 10px; padding: 8px 10px; }
+    .cal-toolbar { padding: 12px 14px; }
+    .appt-table { font-size: 11px; }
+    .appt-table thead th,
+    .appt-table tbody td { padding: 10px 8px; }
+    .header { padding: 32px 16px 28px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ================================================================ -->
+<!-- HEADER -->
+<!-- ================================================================ -->
+<div class="header">
+  <h1><span>Salon Cloud</span> &mdash; Full-Stack PWA Salon Management System</h1>
+  <p class="sub">
+    Independently designed and built for <strong>YULI Beauty Salon</strong> (Hong Kong).
+    Replaced paper-based operations with a complete digital workflow.
+    <strong>HK$0/month</strong> operating cost using free cloud tiers.
+  </p>
+  <div class="badge-row">
+    <span class="badge">React 18</span>
+    <span class="badge">Vite</span>
+    <span class="badge">Tailwind CSS</span>
+    <span class="badge">Supabase</span>
+    <span class="badge">PostgreSQL</span>
+    <span class="badge">RLS Security</span>
+    <span class="badge">Vercel CI/CD</span>
+    <span class="badge">PWA</span>
+  </div>
+</div>
+
+<!-- Simulated app nav bar -->
+<div class="nav-bar">
+  <div class="nav-brand"><span class="dot"></span> Salon Cloud</div>
+  <div class="nav-info">
+    <span>27 June 2026</span>
+    <span class="tag">Demo</span>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- ================================================================ -->
+  <!-- STATS -->
+  <!-- ================================================================ -->
+  <section style="padding-bottom: 0;">
+    <div class="stat-row">
+      <div class="stat"><div class="stat-num">15</div><div class="stat-label">Pages</div></div>
+      <div class="stat"><div class="stat-num">11</div><div class="stat-label">DB Tables</div></div>
+      <div class="stat"><div class="stat-num">20+</div><div class="stat-label">RLS Policies</div></div>
+      <div class="stat"><div class="stat-num">15+</div><div class="stat-label">RPC Functions</div></div>
+      <div class="stat"><div class="stat-num">~7,000</div><div class="stat-label">Lines of Code</div></div>
+      <div class="stat"><div class="stat-num">HK$0</div><div class="stat-label">Monthly Cost</div></div>
+    </div>
+  </section>
+
+  <!-- ================================================================ -->
+  <!-- SUMMARY -->
+  <!-- ================================================================ -->
+  <div class="summary">
+    <strong>Project Summary</strong> &mdash; Independently designed, built, and deployed a complete Progressive Web App for a real Hong Kong beauty salon. The system handles clients, treatments, appointment booking with 3D collision detection, installment payment tracking, refunds, revenue reports, and staff scheduling. Built with React 18 + Vite on the frontend, Supabase (PostgreSQL) on the backend, and deployed via Vercel CI/CD. All at zero monthly cost using free cloud tiers.
+  </div>
+
+  <!-- ================================================================ -->
+  <!-- APPOINTMENT CALENDAR — the core showcase -->
+  <!-- ================================================================ -->
+  <section>
+    <div class="section-title">Appointment Calendar</div>
+    <div class="section-sub">Static demo with mock data — showing the real UI layout and interaction patterns from the production app.</div>
+
+    <div class="calendar-shell" id="calendarRoot">
+      <!-- Rendered by JS below -->
+    </div>
+
+    <!-- Appointment timeline list -->
+    <div class="appt-list-section" id="apptListRoot">
+      <!-- Rendered by JS below -->
+    </div>
+  </section>
+
+  <!-- ================================================================ -->
+  <!-- TECH STACK -->
+  <!-- ================================================================ -->
+  <section>
+    <div class="section-title">Technical Stack</div>
+    <div class="section-sub">Every layer chosen for production-grade reliability at zero cost.</div>
+    <div class="tech-grid">
+      <div class="tech-card">
+        <h4>Frontend</h4>
+        <p>React 18, Vite, Tailwind CSS, Flowbite React, React Router v6 (lazy loading, auth guards), Context API, custom hooks</p>
+      </div>
+      <div class="tech-card">
+        <h4>Backend / Database</h4>
+        <p>Supabase (PostgreSQL), Row-Level Security, 15+ SECURITY DEFINER RPC functions, database triggers, CHECK constraints</p>
+      </div>
+      <div class="tech-card">
+        <h4>Authentication</h4>
+        <p>Supabase Auth (JWT + Magic Link), PASSWORD_RECOVERY flow, Custom Claims in JWT app_metadata, session auto-refresh</p>
+      </div>
+      <div class="tech-card">
+        <h4>Deployment</h4>
+        <p>Vercel Edge CDN, Git-push auto-deploy, free Hobby plan, Service Worker v2 (network-first) for PWA offline support</p>
+      </div>
+      <div class="tech-card">
+        <h4>Export & Reports</h4>
+        <p>XLSX (SheetJS) client-side Excel generation, one-click client & sales reports, dormant client auto-detection</p>
+      </div>
+      <div class="tech-card">
+        <h4>PWA</h4>
+        <p>Service Worker v2 (network-first cache strategy), Web App Manifest, iPad "Add to Home Screen" one-tap install</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================================================================ -->
+  <!-- KEY FEATURES -->
+  <!-- ================================================================ -->
+  <section>
+    <div class="section-title">Key Features</div>
+    <div class="section-sub">Designed around the real daily workflow of a Hong Kong beauty salon.</div>
+    <div class="feature-grid">
+      <div class="feature">
+        <h4>3D Collision-Check Booking</h4>
+        <p>Real-time conflict detection across staff, room, and equipment dimensions. Visual indicators on DayPicker calendar.</p>
+      </div>
+      <div class="feature">
+        <h4>Installment Payment Tracking</h4>
+        <p>Free-input payment amounts with progress bar (paid / total). Multi-method: Cash, Card, Transfer, PayMe, AlipayHK.</p>
+      </div>
+      <div class="feature">
+        <h4>INSERT-ONLY Activity Log</h4>
+        <p>Tamper-proof audit trail — RLS prohibits UPDATE/DELETE on log records. All money and session changes atomically recorded.</p>
+      </div>
+      <div class="feature">
+        <h4>Refund Workflow</h4>
+        <p>Free-input refund amount with automatic session restoration, mandatory reason, and payment method. Atomically logged.</p>
+      </div>
+      <div class="feature">
+        <h4>WhatsApp Snippet Selector</h4>
+        <p>Smart tag chips with {{variable}} injection, inline CRUD, and one-tap copy for customer communication.</p>
+      </div>
+      <div class="feature">
+        <h4>Excel Export & Dormant Detection</h4>
+        <p>One-click XLSX reports. Auto-detection of clients inactive for 90+ days with WhatsApp quick-action button.</p>
+      </div>
+      <div class="feature">
+        <h4>3-Layer Treatment Deactivation</h4>
+        <p>Block if in use (show who), soft-disable if historical, allow delete only if unused. Prevents data corruption.</p>
+      </div>
+      <div class="feature">
+        <h4>Touch-Friendly Discount Calculator</h4>
+        <p>Slider-based % OFF with live 3-way sync (unit price, discount, package price). Built for iPad with 48px touch targets.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================================================================ -->
+  <!-- SECURITY -->
+  <!-- ================================================================ -->
+  <section>
+    <div class="section-title">Security Architecture</div>
+    <div class="section-sub">6-layer defense-in-depth, from browser input validation to database constraints.</div>
+    <div class="feature-grid">
+      <div class="feature">
+        <h4>Layer 1: Authentication</h4>
+        <p>Supabase JWT with Magic Link + PASSWORD_RECOVERY flow. Session auto-refresh with onAuthStateChange guard.</p>
+      </div>
+      <div class="feature">
+        <h4>Layer 2: Authorization</h4>
+        <p>Row-Level Security on all 11 tables. Role-based policies (shop_owner / staff). Custom Claims in JWT app_metadata.</p>
+      </div>
+      <div class="feature">
+        <h4>Layer 3: Data Integrity</h4>
+        <p>CHECK constraints (price &gt; 0, capacity &gt; 0, duration &gt; 0). NOT NULL on critical fields. Frontend + DB dual input validation.</p>
+      </div>
+      <div class="feature">
+        <h4>Layer 4: Audit Trail</h4>
+        <p>activity_log table — INSERT-ONLY. RLS denies UPDATE / DELETE on audit records. All sensitive mutations permanently logged.</p>
+      </div>
+      <div class="feature">
+        <h4>Layer 5: Atomic Operations</h4>
+        <p>15+ SECURITY DEFINER RPC functions. FOR UPDATE row locks prevent race conditions. Idempotent consumption checks.</p>
+      </div>
+      <div class="feature">
+        <h4>Layer 6: Key Management</h4>
+        <p>ANON key (browser-safe, RLS-protected). SECRET key (server-only, never exposed). Git history cleaned, .env in .gitignore.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================================================================ -->
+  <!-- LINKS -->
+  <!-- ================================================================ -->
+  <section>
+    <div class="section-title">Links</div>
+    <div class="links-row">
+      <a href="https://salon-cloud-pwa.vercel.app" class="link-card" target="_blank" rel="noopener">
+        <div class="label">Live Production App</div>
+        <div class="value">salon-cloud-pwa.vercel.app</div>
+      </a>
+      <a href="https://github.com/ManShingYip/salon-cloud-portfolio" class="link-card" target="_blank" rel="noopener">
+        <div class="label">Portfolio Repo (Public)</div>
+        <div class="value">github.com/ManShingYip/salon-cloud-portfolio</div>
+      </a>
+      <a href="https://github.com/ManShingYip/salon-cloud-pwa" class="link-card" target="_blank" rel="noopener">
+        <div class="label">Source Code (Private)</div>
+        <div class="value">github.com/ManShingYip/salon-cloud-pwa</div>
+      </a>
+      <a href="https://linkedin.com/in/man-shing-yip-b5b5473b8" class="link-card" target="_blank" rel="noopener">
+        <div class="label">LinkedIn Profile</div>
+        <div class="value">linkedin.com/in/man-shing-yip-b5b5473b8</div>
+      </a>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <p>Built by <a href="https://linkedin.com/in/man-shing-yip-b5b5473b8" target="_blank" rel="noopener">Man Shing Yip</a> &middot; June 2026 &middot; React 18 &middot; Supabase &middot; PostgreSQL &middot; Vercel &middot; HK$0/month</p>
+</footer>
+
+<!-- ================================================================ -->
+<!-- STATIC DATA + RENDER LOGIC -->
+<!-- ================================================================ -->
 <script>
-  tailwind.config = {
-    theme: {
-      extend: {
-        colors: {
-          primary: '#C88EA7',
-          'primary-light': '#F0E0E8',
-          'primary-dark': '#9B6B82',
-          bg: '#FEFAF6',
-          surface: '#FFFFFF',
-          text: '#2D2D2D',
-          'text-muted': '#8B7E8B',
-          danger: '#D4736A',
-          success: '#6B9B7D',
-        }
+(function() {
+  // ---- Mock appointment data ----
+  var appointments = [
+    { id:1,  client:"Chan Siu Man",    member:"Y-00001", treatment:"Deep Cleanse Facial",           start:"10:00", end:"11:30", staff:"Amy",   room:"Room A",  status:"confirmed",  vip:true,  sensitive:false },
+    { id:2,  client:"Lee Tai",         member:"Y-00002", treatment:"Collagen Infusion",             start:"10:30", end:"11:30", staff:"Betty",  room:"VIP Room", status:"attended",   vip:false, sensitive:false },
+    { id:3,  client:"Cheung Siu Man",  member:"Y-00003", treatment:"Laser Spot Removal",            start:"11:00", end:"12:30", staff:"Amy",    room:"Room B",   status:"confirmed",  vip:false, sensitive:true  },
+    { id:4,  client:"Wong Tai",        member:"Y-00004", treatment:"Back Massage",                  start:"14:00", end:"15:00", staff:"Candy",  room:"Room A",   status:"cancelled",  vip:false, sensitive:false },
+    { id:5,  client:"Chiu Siu Man",    member:"Y-00005", treatment:"Collagen Infusion",             start:"14:30", end:"15:30", staff:"Betty",  room:"VIP Room", status:"confirmed",  vip:true,  sensitive:false },
+    { id:6,  client:"Lam Tai",         member:"Y-00006", treatment:"Deep Cleanse Facial",           start:"15:00", end:"16:30", staff:"Amy",    room:"Room B",   status:"confirmed",  vip:false, sensitive:false },
+    { id:7,  client:"Ho Siu Man",      member:"Y-00007", treatment:"Aromatherapy Massage",          start:"16:00", end:"17:30", staff:"Candy",  room:"Room A",   status:"confirmed",  vip:false, sensitive:false },
+    { id:8,  client:"Ng Tai",          member:"Y-00008", treatment:"Laser Spot Removal",            start:"16:30", end:"18:00", staff:"Betty",  room:"VIP Room", status:"attended",   vip:false, sensitive:true  },
+    { id:9,  client:"Chow Siu Man",    member:"Y-00009", treatment:"Deep Cleanse Facial",           start:"17:00", end:"18:00", staff:"Amy",    room:"Room B",   status:"confirmed",  vip:false, sensitive:false },
+    { id:10, client:"Leung Tai",       member:"Y-00010", treatment:"Back Massage",                  start:"18:00", end:"19:00", staff:"Candy",  room:"Room A",   status:"confirmed",  vip:false, sensitive:false }
+  ];
+
+  // ---- Build calendar grid (June 2026) ----
+  // June 2026: 1 = Monday, 30 days
+  var today = 27;
+  var daysInMonth = 30;
+  var startDow = 1; // Monday
+
+  // Group appointments by day (spread them across the month for demo)
+  var apptByDay = {};
+  // Populate: each appointment gets a day
+  var demoDays = [2,3,5,6,10,13,16,19,23,27];
+  for (var i = 0; i < appointments.length; i++) {
+    var d = demoDays[i];
+    if (!apptByDay[d]) apptByDay[d] = [];
+    apptByDay[d].push(appointments[i]);
+  }
+
+  // Calendar rendering
+  var cells = [];
+  // Previous month padding (May 2026 ends on Sunday 31, so Monday=1 => no padding needed?
+  // Actually June 1 2026 is Monday. M T W T F S S. startDow=1 means 0 blank cells before day 1.
+  // But we might want padding from previous month for realism: May has 31 days, ends Sun May 31.
+  // June 1 = Monday => 0 padding cells from May if we start on Monday.
+  // Let's add a couple padding cells for a more natural look
+  var prevMonthDays = 0; // May 30 (Sat), May 31 (Sun) ... actually let's keep it clean
+
+  // Build 6 rows (to cover 30 days starting Monday)
+  var totalCells = 42; // 6 rows x 7 cols
+  var dayCounter = 1;
+
+  for (var c = 0; c < totalCells; c++) {
+    var isPadding = (c < prevMonthDays) || (dayCounter > daysInMonth);
+    var dayNum = isPadding ? (c < prevMonthDays ? (31 - prevMonthDays + c + 1) : (dayCounter - daysInMonth)) : dayCounter;
+    var isOtherMonth = isPadding;
+    var isToday = (dayNum === today && !isOtherMonth);
+
+    var chips = '';
+    if (!isOtherMonth && apptByDay[dayNum]) {
+      var dayAppts = apptByDay[dayNum];
+      var show = dayAppts.slice(0, 2); // max 2 chips per cell
+      for (var a = 0; a < show.length; a++) {
+        var ap = show[a];
+        chips += '<span class="cal-chip ' + ap.status + '">' + ap.start + ' ' + ap.client + '</span>';
+      }
+      if (dayAppts.length > 2) {
+        chips += '<span class="cal-chip more">+' + (dayAppts.length - 2) + ' more</span>';
       }
     }
+
+    var cls = 'cal-cell';
+    if (isOtherMonth) cls += ' other-month';
+    if (isToday) cls += ' today';
+
+    cells.push('<div class="' + cls + '"><span class="day-num">' + dayNum + '</span>' + chips + '</div>');
+
+    if (!isPadding) dayCounter++;
   }
+
+  var weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  var weekdaysHTML = weekdays.map(function(w) { return '<div>' + w + '</div>'; }).join('');
+
+  var calendarHTML =
+    '<div class="cal-toolbar">' +
+      '<div class="date-nav">' +
+        '<button class="arrow">&lsaquo;</button>' +
+        '<span class="date-label">June 2026</span>' +
+        '<button class="arrow">&rsaquo;</button>' +
+      '</div>' +
+      '<div class="actions">' +
+        '<button class="btn-sm">Today</button>' +
+        '<button class="btn-sm primary">+ New</button>' +
+      '</div>' +
+    '</div>' +
+    '<div class="cal-weekdays">' + weekdaysHTML + '</div>' +
+    '<div class="cal-grid">' + cells.join('') + '</div>';
+
+  document.getElementById('calendarRoot').innerHTML = calendarHTML;
+
+  // ---- Appointment timeline table ----
+  var statusClass = { confirmed: 'confirmed', attended: 'attended', cancelled: 'cancelled' };
+  var statusLabel = { confirmed: 'Confirmed', attended: 'Attended', cancelled: 'Cancelled' };
+
+  var rows = appointments.map(function(a) {
+    var vipBadge = a.vip ? ' <span class="pill vip">VIP</span>' : '';
+    var sensitiveBadge = a.sensitive ? ' <span class="pill warning">Sensitive</span>' : '';
+    return '<tr>' +
+      '<td><span class="time-slot">' + a.start + ' <small>&ndash; ' + a.end + '</small></span></td>' +
+      '<td><strong>' + a.client + '</strong>' + vipBadge + sensitiveBadge + '<br><span style="font-size:11px;color:var(--text-muted)">' + a.member + '</span></td>' +
+      '<td>' + a.treatment + '</td>' +
+      '<td>' + a.staff + '</td>' +
+      '<td>' + a.room + '</td>' +
+      '<td><span class="status-dot ' + statusClass[a.status] + '"></span>' + statusLabel[a.status] + '</td>' +
+      '</tr>';
+  }).join('');
+
+  var tableHTML =
+    '<div class="appt-list-header">' +
+      '<h3>All Appointments</h3>' +
+      '<span class="count">' + appointments.length + ' appointments</span>' +
+    '</div>' +
+    '<table class="appt-table">' +
+      '<thead><tr><th>Time</th><th>Client</th><th>Treatment</th><th>Staff</th><th>Room</th><th>Status</th></tr></thead>' +
+      '<tbody>' + rows + '</tbody>' +
+    '</table>';
+
+  document.getElementById('apptListRoot').innerHTML = tableHTML;
+})();
 </script>
-</head>
-<body class="bg-bg min-h-screen font-sans antialiased">
-
-<!-- ========== LAYOUT MIMICS AppLayout ========== -->
-<nav class="bg-white border-b border-gray-100 px-6 py-3 flex items-center justify-between shadow-sm">
-  <div class="flex items-center gap-3">
-    <span class="text-2xl">💆</span>
-    <span class="font-bold text-lg text-primary-dark">Salon Cloud</span>
-  </div>
-  <div class="flex items-center gap-4 text-sm text-text-muted">
-    <span>📅 2026年6月27日</span>
-    <span class="bg-primary-light text-primary-dark px-3 py-1 rounded-full text-xs font-semibold">Demo Mode</span>
-  </div>
-</nav>
-
-<main class="max-w-6xl mx-auto p-6">
-
-  <!-- ========== DEMO BANNER ========== -->
-  <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-3 mb-6 text-center text-sm text-yellow-700">
-    ⚠️ This is a <strong>static demo</strong> with mock data. No real database connection. Source code: <a href="https://github.com/ManShingYip/salon-cloud-portfolio" class="underline">github.com/ManShingYip/salon-cloud-portfolio</a>
-  </div>
-
-  <!-- ========== STATS ROW ========== -->
-  <div class="grid grid-cols-4 gap-4 mb-6" id="statsRow"></div>
-
-  <!-- ========== APPOINTMENT CALENDAR ========== -->
-  <h2 class="text-lg font-bold text-text mb-3 flex items-center gap-2">
-    <span>📅</span> Today's Appointments — Mock Demo
-  </h2>
-  <div id="appointmentsList" class="space-y-3"></div>
-
-  <!-- ========== CLIENT TABLE ========== -->
-  <h2 class="text-lg font-bold text-text mt-8 mb-3 flex items-center gap-2">
-    <span>👥</span> Client List
-  </h2>
-  <div id="clientsTable"></div>
-
-  <!-- ========== TREATMENT CARDS ========== -->
-  <h2 class="text-lg font-bold text-text mt-8 mb-3 flex items-center gap-2">
-    <span>💆</span> Treatment Catalog
-  </h2>
-  <div id="treatmentsGrid" class="grid grid-cols-3 gap-4"></div>
-
-  <!-- ========== PAYMENT METHODS ========== -->
-  <h2 class="text-lg font-bold text-text mt-8 mb-3 flex items-center gap-2">
-    <span>💳</span> Payment Methods Supported
-  </h2>
-  <div id="paymentMethods" class="flex gap-3 flex-wrap"></div>
-
-</main>
-
-<script>
-// ============================================================
-// MOCK DATA
-// ============================================================
-const mockAppointments = [
-  { id:1, client:"陳小姐", member:"Y-00001", treatment:"深層清潔面部護理", time:"10:00", end:"11:30", staff:"Amy", room:"Room A", status:"confirmed", vip:true, sensitive:false },
-  { id:2, client:"李太", member:"Y-00002", treatment:"膠原蛋白導入", time:"11:00", end:"12:00", staff:"Betty", room:"VIP 房", status:"attended", vip:false, sensitive:false },
-  { id:3, client:"張小姐", member:"Y-00003", treatment:"激光去斑療程", time:"14:00", end:"15:30", staff:"Amy", room:"Room B", status:"confirmed", vip:false, sensitive:true },
-  { id:4, client:"王太", member:"Y-00004", treatment:"深層清潔面部護理", time:"14:30", end:"16:00", staff:"Betty", room:"Room A", status:"cancelled", vip:false, sensitive:false },
-  { id:5, client:"趙小姐", member:"Y-00005", treatment:"膠原蛋白導入", time:"16:00", end:"17:00", staff:"Amy", room:"Room B", status:"confirmed", vip:true, sensitive:false },
-];
-
-const mockClients = [
-  { name:"陳小姐", member:"Y-00001", phone:"****-1234", source:"IG廣告", sensitive:false, last:"2026-06-20", spent:12800 },
-  { name:"李太", member:"Y-00002", phone:"****-5678", source:"朋友介紹", sensitive:false, last:"2026-06-19", spent:5600 },
-  { name:"張小姐", member:"Y-00003", phone:"****-9012", source:"街客", sensitive:true, last:"2026-06-18", spent:23400 },
-  { name:"王太", member:"Y-00004", phone:"****-3456", source:"IG廣告", sensitive:false, last:"2026-05-15", spent:3200 },
-  { name:"趙小姐", member:"Y-00005", phone:"****-7890", source:"朋友介紹", sensitive:false, last:"2026-06-21", spent:18900 },
-];
-
-const mockTreatments = [
-  { name:"深層清潔面部護理", category:"面部護理", single:580, duration:90, sessions:10, package:4800 },
-  { name:"膠原蛋白導入", category:"面部護理", single:880, duration:60, sessions:6, package:4200 },
-  { name:"激光去斑療程", category:"光學療程", single:1200, duration:90, sessions:5, package:5000 },
-  { name:"背部推油", category:"身體護理", single:480, duration:60, sessions:0, package:0 },
-  { name:"香薰按摩", category:"身體護理", single:680, duration:90, sessions:8, package:4500 },
-];
-
-const methods = ["現金 💵","信用卡 💳","轉賬 🏦","PayMe 📱","AlipayHK 📲"];
-
-// ============================================================
-// RENDER FUNCTIONS
-// ============================================================
-
-// Stats
-const stats = [
-  { label:"今日預約", value:mockAppointments.length, color:"text-primary-dark" },
-  { label:"今日收入", value:"HK$6,800", color:"text-success" },
-  { label:"活躍客戶", value:mockClients.length, color:"text-primary-dark" },
-  { label:"緩存訂單", value:"23 筆", color:"text-yellow-600" },
-];
-document.getElementById('statsRow').innerHTML = stats.map(s => `
-  <div class="bg-surface rounded-xl p-5 shadow-sm border border-gray-100 text-center">
-    <div class="text-3xl font-extrabold ${s.color}">${s.value}</div>
-    <div class="text-xs text-text-muted mt-1 uppercase tracking-wide">${s.label}</div>
-  </div>
-`).join('');
-
-// Appointments
-const statusColors = { confirmed:'bg-blue-100 text-blue-700', attended:'bg-green-100 text-green-700', cancelled:'bg-gray-100 text-gray-500' };
-const statusLabels = { confirmed:'已確認', attended:'已出席', cancelled:'已取消' };
-
-document.getElementById('appointmentsList').innerHTML = mockAppointments.map(a => `
-  <div class="bg-surface rounded-xl p-4 shadow-sm border border-gray-100 flex items-center gap-4 hover:shadow-md transition-shadow">
-    <div class="text-center w-16 shrink-0">
-      <div class="text-lg font-bold text-text">${a.time}</div>
-      <div class="text-xs text-text-muted">${a.end}</div>
-    </div>
-    <div class="flex-1 min-w-0">
-      <div class="flex items-center gap-2">
-        <span class="font-semibold text-text">${a.client}</span>
-        ${a.vip ? '<span class="text-xs bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full font-medium">VIP</span>' : ''}
-        ${a.sensitive ? '<span class="text-xs bg-red-100 text-red-600 px-2 py-0.5 rounded-full font-medium">⚠️ 敏感</span>' : ''}
-      </div>
-      <div class="text-sm text-text-muted">${a.treatment}</div>
-    </div>
-    <div class="text-sm text-text-muted text-center w-20 shrink-0">👩‍🔧 ${a.staff}</div>
-    <div class="text-sm text-text-muted text-center w-16 shrink-0">🚪 ${a.room}</div>
-    <span class="text-xs px-3 py-1 rounded-full font-medium shrink-0 ${statusColors[a.status]}">${statusLabels[a.status]}</span>
-  </div>
-`).join('');
-
-// Clients
-document.getElementById('clientsTable').innerHTML = `
-<table class="w-full bg-surface rounded-xl overflow-hidden shadow-sm border border-gray-100">
-  <thead>
-    <tr class="bg-bg text-xs uppercase text-text-muted border-b">
-      <th class="px-6 py-4 text-left font-bold">會員編號</th>
-      <th class="px-6 py-4 text-left font-bold">姓名</th>
-      <th class="px-6 py-4 text-left font-bold">電話</th>
-      <th class="px-6 py-4 text-left font-bold">來源</th>
-      <th class="px-6 py-4 text-left font-bold">最後到訪</th>
-      <th class="px-6 py-4 text-right font-bold">累積消費</th>
-    </tr>
-  </thead>
-  <tbody class="divide-y divide-gray-100">
-    ${mockClients.map(c => `
-      <tr class="hover:bg-bg transition-colors">
-        <td class="px-6 py-4 font-mono text-sm font-semibold text-primary-dark">${c.member}</td>
-        <td class="px-6 py-4 font-medium">${c.name} ${c.sensitive ? '<span class="text-xs bg-red-100 text-red-600 px-2 py-0.5 rounded-full ml-1">敏感</span>' : ''}</td>
-        <td class="px-6 py-4 text-sm text-text-muted">${c.phone}</td>
-        <td class="px-6 py-4"><span class="text-xs bg-primary-light text-primary-dark px-3 py-1 rounded-full">${c.source}</span></td>
-        <td class="px-6 py-4 text-sm text-text-muted">${c.last}</td>
-        <td class="px-6 py-4 text-right font-semibold">HK$${c.spent.toLocaleString()}</td>
-      </tr>
-    `).join('')}
-  </tbody>
-</table>`;
-
-// Treatments
-document.getElementById('treatmentsGrid').innerHTML = mockTreatments.map(t => `
-  <div class="bg-surface rounded-xl p-5 border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
-    <div class="text-xs text-primary-dark font-semibold uppercase tracking-wide mb-1">${t.category}</div>
-    <div class="font-bold text-text text-lg mb-2">${t.name}</div>
-    <div class="flex justify-between text-sm mb-1"><span class="text-text-muted">單次</span><span class="font-semibold">HK$${t.single}</span></div>
-    <div class="flex justify-between text-sm mb-1"><span class="text-text-muted">時長</span><span>${t.duration} 分鐘</span></div>
-    ${t.sessions > 0 ? `<div class="flex justify-between text-sm"><span class="text-text-muted">套票</span><span class="font-semibold text-success">${t.sessions}次 / HK$${t.package.toLocaleString()}</span></div>` : '<div class="text-sm text-text-muted italic">無套票</div>'}
-  </div>
-`).join('');
-
-// Payment methods
-document.getElementById('paymentMethods').innerHTML = methods.map(m => `
-  <span class="bg-surface border border-gray-200 rounded-full px-5 py-3 text-sm font-medium shadow-sm">${m}</span>
-`).join('');
-
-</script>
-
-<footer class="text-center py-8 text-xs text-text-muted border-t border-gray-100 mt-12">
-  <p>Salon Cloud Demo · Built with ❤️ by Man Shing Yip · Mock data only — no real database connection</p>
-  <p class="mt-1">Full source (private): github.com/ManShingYip/salon-cloud-pwa · Portfolio: github.com/ManShingYip/salon-cloud-portfolio</p>
-</footer>
 
 </body>
 </html>
