@@ -289,6 +289,18 @@
   .appt-card.narrow { padding: 6px 8px; }
   .appt-card.narrow .client-name { font-size: 11px; }
 
+  /* Staff highlight / dim */
+  .appt-card.appt-dimmed { opacity: 0.2; filter: grayscale(0.5); }
+  .appt-card.appt-highlight { border-left-color: #059669; box-shadow: 0 0 0 2px rgba(5,150,105,0.25); }
+
+  /* Staff row active */
+  .staff-row.staff-active { background: #ECFDF5; border-radius: 8px; padding: 4px 8px; margin: 0 -8px; }
+
+  /* Stat pill active */
+  .sub-stat.active-pill { outline: 2px solid var(--primary-dark); outline-offset: 2px; border-radius: var(--radius); }
+  .stats .big-num-wrap { cursor: pointer; user-select: none; }
+  .stats .big-num-wrap:hover .big-num { color: var(--primary); }
+
   /* -- Summary section -- */
   .summary {
     background: var(--surface);
@@ -372,12 +384,14 @@
       <!-- Stats card -->
       <div class="card stats">
         <h3>Today's Stats</h3>
-        <div class="big-num" id="statTotal">10</div>
-        <div style="font-size:10px;color:var(--text-muted);">total appointments</div>
+        <div class="big-num-wrap" style="display:inline-block;">
+          <div class="big-num" id="statTotal">16</div>
+          <div style="font-size:10px;color:var(--text-muted);">total (click to reset filters)</div>
+        </div>
         <div class="sub-row">
-          <div class="sub-stat green"><div class="val" id="statAttended">3</div><div class="lbl">Attended</div></div>
-          <div class="sub-stat amber"><div class="val" id="statPending">6</div><div class="lbl">Confirmed</div></div>
-          <div class="sub-stat red"><div class="val" id="statNoShow">1</div><div class="lbl">No-show</div></div>
+          <div class="sub-stat green" id="pillAttended"><div class="val" id="statAttended">3</div><div class="lbl">Attended</div></div>
+          <div class="sub-stat amber" id="pillPending"><div class="val" id="statPending">12</div><div class="lbl">Confirmed</div></div>
+          <div class="sub-stat red" id="pillNoShow"><div class="val" id="statNoShow">1</div><div class="lbl">No-show</div></div>
         </div>
       </div>
 
@@ -386,17 +400,17 @@
         <h3>Today's Staff <span style="font-weight:400;color:var(--text-muted);">(5)</span></h3>
         <div style="margin-bottom:6px;">
           <div style="font-size:10px;font-weight:700;color:#059669;text-transform:uppercase;letter-spacing:0.5px;">On Duty (3)</div>
-          <div class="staff-row">
+          <div class="staff-row" id="staff-amy">
             <div class="staff-avatar on">A</div>
             <div class="staff-info"><div class="name">Amy</div></div>
             <span class="staff-badge on">09:00-18:00</span>
           </div>
-          <div class="staff-row">
+          <div class="staff-row" id="staff-betty">
             <div class="staff-avatar on">B</div>
             <div class="staff-info"><div class="name">Betty</div></div>
             <span class="staff-badge on">10:00-19:00</span>
           </div>
-          <div class="staff-row">
+          <div class="staff-row" id="staff-candy">
             <div class="staff-avatar on">C</div>
             <div class="staff-info"><div class="name">Candy</div></div>
             <span class="staff-badge on">11:00-20:00</span>
@@ -453,53 +467,15 @@
 <!-- ============================================================ -->
 <script>
 (function(){
-  // ---- Mock data ----
-  var rooms = [
-    { id: 'r1', name: 'Room A' },
-    { id: 'r2', name: 'VIP Room' },
-    { id: 'r3', name: 'Room B' },
-    { id: 'r4', name: 'Room C' }
-  ];
-
-  // Appointments with intentional overlaps to showcase collision detection
-  var appointments = [
-    // Room A — normal, no overlaps
-    { id:1,  client:"Chan Siu Man",   member:"Y-00001", treatment:"Deep Cleanse Facial",           start:"09:00", end:"10:30", room:"r1", staff:"Amy",   status:"confirmed", vip:true,  sensitive:false, dur:90 },
-    { id:2,  client:"Wong Tai",       member:"Y-00004", treatment:"Back Massage",                  start:"13:00", end:"14:00", room:"r1", staff:"Candy",  status:"no_show",   vip:false, sensitive:false, dur:60 },
-    { id:3,  client:"Ho Siu Man",     member:"Y-00007", treatment:"Aromatherapy Massage",          start:"15:30", end:"17:00", room:"r1", staff:"Candy",  status:"confirmed", vip:false, sensitive:false, dur:90 },
-    // Room A — OVERLAP: two appointments collide at 11:00-12:30
-    { id:4,  client:"Cheung Siu Man", member:"Y-00003", treatment:"Laser Spot Removal",            start:"11:00", end:"12:30", room:"r1", staff:"Amy",    status:"confirmed", vip:false, sensitive:true,  dur:90 },
-    { id:5,  client:"Lam Siu Ming",   member:"Y-00011", treatment:"Collagen Facial",               start:"11:00", end:"12:00", room:"r1", staff:"Betty",  status:"confirmed", vip:false, sensitive:false, dur:60 },
-
-    // VIP Room — OVERLAP: THREE appointments collide
-    { id:6,  client:"Lee Tai",        member:"Y-00002", treatment:"Collagen Infusion",             start:"10:00", end:"11:00", room:"r2", staff:"Betty",  status:"attended",  vip:false, sensitive:false, dur:60 },
-    { id:7,  client:"Chiu Siu Man",   member:"Y-00005", treatment:"Collagen Infusion",             start:"14:00", end:"15:30", room:"r2", staff:"Betty",  status:"confirmed", vip:true,  sensitive:false, dur:90 },
-    // VIP Room — 3-way overlap demo
-    { id:8,  client:"Ma Tai",         member:"Y-00012", treatment:"Deep Cleanse Facial",           start:"09:30", end:"10:30", room:"r2", staff:"Amy",    status:"confirmed", vip:false, sensitive:false, dur:60 },
-    { id:9,  client:"Tang Siu Man",   member:"Y-00013", treatment:"Back Massage",                  start:"09:30", end:"10:00", room:"r2", staff:"Candy",  status:"confirmed", vip:false, sensitive:false, dur:30 },
-    { id:10, client:"Yeung Tai",      member:"Y-00014", treatment:"Quick Touch-up",                start:"10:00", end:"10:30", room:"r2", staff:"Amy",    status:"confirmed", vip:false, sensitive:false, dur:30 },
-
-    // Room B — one long appointment
-    { id:11, client:"Lam Tai",        member:"Y-00006", treatment:"Deep Cleanse Facial",           start:"14:30", end:"15:30", room:"r3", staff:"Amy",    status:"confirmed", vip:false, sensitive:false, dur:60 },
-    { id:12, client:"Leung Tai",      member:"Y-00010", treatment:"Back Massage",                  start:"18:00", end:"19:00", room:"r3", staff:"Candy",  status:"confirmed", vip:false, sensitive:false, dur:60 },
-    // Room B — OVERLAP: two appointments
-    { id:13, client:"Kwok Kam",       member:"Y-00015", treatment:"Laser Spot Removal",            start:"10:30", end:"12:00", room:"r3", staff:"Betty",  status:"confirmed", vip:false, sensitive:true,  dur:90 },
-    { id:14, client:"Choi Siu",       member:"Y-00016", treatment:"Facial Massage",                start:"10:30", end:"11:30", room:"r3", staff:"Amy",    status:"confirmed", vip:true,  sensitive:false, dur:60 },
-
-    // Room C
-    { id:15, client:"Ng Tai",         member:"Y-00008", treatment:"Laser Spot Removal",            start:"16:00", end:"17:30", room:"r4", staff:"Betty",  status:"attended",  vip:false, sensitive:true,  dur:90 },
-    { id:16, client:"Chow Siu Man",   member:"Y-00009", treatment:"Deep Cleanse Facial",           start:"17:00", end:"18:00", room:"r4", staff:"Amy",    status:"confirmed", vip:false, sensitive:false, dur:60 }
-  ];
-
-  // ---- Time slots: 08:00 - 20:00, 30-min intervals ----
+  // ==== Constants ====
   var TIME_SLOTS = [];
   for (var h = 8; h <= 20; h++) {
     TIME_SLOTS.push(String(h).padStart(2,'0') + ':00');
     if (h < 20) TIME_SLOTS.push(String(h).padStart(2,'0') + ':30');
   }
-  var SLOT_HEIGHT = 80; // px per 30min
+  var SLOT_HEIGHT = 80;
   var PX_PER_MIN = SLOT_HEIGHT / 30;
-  var FIRST_SLOT = 8 * 60; // 480 min
+  var FIRST_SLOT = 8 * 60;
 
   function timeToTop(t) {
     if (!t) return 0;
@@ -508,171 +484,330 @@
   }
   function durToHeight(d) { return Math.max(40, d * PX_PER_MIN); }
 
-  /**
-   * Production overlap algorithm (mirrors DailyAppointmentsPage.jsx lines 463-501):
-   * 1. Sort by start_time
-   * 2. Partition into overlap groups (app starts before current group's max end)
-   * 3. Within each group of size N, split horizontally: leftPct = idx*100/N, widthPct = 100/N
-   *
-   * This is a presentation-layer heuristic for the room-based time grid.
-   * Real collision *detection* happens in the 3D booking query (staff x room x equipment).
-   */
-  function layoutAppointments(roomApps) {
-    // Sort by start_time
-    var sorted = roomApps.slice().sort(function(a,b) { return a.start.localeCompare(b.start); });
+  // ==== Rooms ====
+  var rooms = [
+    { id: 'r1', name: 'Room A' },
+    { id: 'r2', name: 'VIP Room' },
+    { id: 'r3', name: 'Room B' },
+    { id: 'r4', name: 'Room C' }
+  ];
 
-    // Partition into overlap groups
-    var groups = [];
-    var curGroup = [];
+  // ==== Staff ====
+  var staffList = ['Amy', 'Betty', 'Candy'];
+
+  // ==== Multi-day appointment data ====
+  // Each key is day-of-month, value is array of appointments for that day
+  var appointmentsByDay = {};
+
+  // Day 27 (today) — 16 appointments, heavy collision demos
+  appointmentsByDay[27] = [
+    { id:'27-1',  client:"Chan Siu Man",   member:"Y-00001", treatment:"Deep Cleanse Facial",           start:"09:00", end:"10:30", room:"r1", staff:"Amy",   status:"confirmed", vip:true,  sensitive:false, dur:90 },
+    { id:'27-2',  client:"Wong Tai",       member:"Y-00004", treatment:"Back Massage",                  start:"13:00", end:"14:00", room:"r1", staff:"Candy",  status:"no_show",   vip:false, sensitive:false, dur:60 },
+    { id:'27-3',  client:"Ho Siu Man",     member:"Y-00007", treatment:"Aromatherapy Massage",          start:"15:30", end:"17:00", room:"r1", staff:"Candy",  status:"confirmed", vip:false, sensitive:false, dur:90 },
+    { id:'27-4',  client:"Cheung Siu Man", member:"Y-00003", treatment:"Laser Spot Removal",            start:"11:00", end:"12:30", room:"r1", staff:"Amy",    status:"confirmed", vip:false, sensitive:true,  dur:90 },
+    { id:'27-5',  client:"Lam Siu Ming",   member:"Y-00011", treatment:"Collagen Facial",               start:"11:00", end:"12:00", room:"r1", staff:"Betty",  status:"confirmed", vip:false, sensitive:false, dur:60 },
+    { id:'27-6',  client:"Lee Tai",        member:"Y-00002", treatment:"Collagen Infusion",             start:"10:00", end:"11:00", room:"r2", staff:"Betty",  status:"attended",  vip:false, sensitive:false, dur:60 },
+    { id:'27-7',  client:"Chiu Siu Man",   member:"Y-00005", treatment:"Collagen Infusion",             start:"14:00", end:"15:30", room:"r2", staff:"Betty",  status:"confirmed", vip:true,  sensitive:false, dur:90 },
+    { id:'27-8',  client:"Ma Tai",         member:"Y-00012", treatment:"Deep Cleanse Facial",           start:"09:30", end:"10:30", room:"r2", staff:"Amy",    status:"confirmed", vip:false, sensitive:false, dur:60 },
+    { id:'27-9',  client:"Tang Siu Man",   member:"Y-00013", treatment:"Back Massage",                  start:"09:30", end:"10:00", room:"r2", staff:"Candy",  status:"confirmed", vip:false, sensitive:false, dur:30 },
+    { id:'27-10', client:"Yeung Tai",      member:"Y-00014", treatment:"Quick Touch-up",                start:"10:00", end:"10:30", room:"r2", staff:"Amy",    status:"confirmed", vip:false, sensitive:false, dur:30 },
+    { id:'27-11', client:"Lam Tai",        member:"Y-00006", treatment:"Deep Cleanse Facial",           start:"14:30", end:"15:30", room:"r3", staff:"Amy",    status:"confirmed", vip:false, sensitive:false, dur:60 },
+    { id:'27-12', client:"Leung Tai",      member:"Y-00010", treatment:"Back Massage",                  start:"18:00", end:"19:00", room:"r3", staff:"Candy",  status:"confirmed", vip:false, sensitive:false, dur:60 },
+    { id:'27-13', client:"Kwok Kam",       member:"Y-00015", treatment:"Laser Spot Removal",            start:"10:30", end:"12:00", room:"r3", staff:"Betty",  status:"confirmed", vip:false, sensitive:true,  dur:90 },
+    { id:'27-14', client:"Choi Siu",       member:"Y-00016", treatment:"Facial Massage",                start:"10:30", end:"11:30", room:"r3", staff:"Amy",    status:"confirmed", vip:true,  sensitive:false, dur:60 },
+    { id:'27-15', client:"Ng Tai",         member:"Y-00008", treatment:"Laser Spot Removal",            start:"16:00", end:"17:30", room:"r4", staff:"Betty",  status:"attended",  vip:false, sensitive:true,  dur:90 },
+    { id:'27-16', client:"Chow Siu Man",   member:"Y-00009", treatment:"Deep Cleanse Facial",           start:"17:00", end:"18:00", room:"r4", staff:"Amy",    status:"confirmed", vip:false, sensitive:false, dur:60 }
+  ];
+
+  // Day 26 (yesterday)
+  appointmentsByDay[26] = [
+    { id:'26-1', client:"Lau Siu Ming",  member:"Y-00021", treatment:"Aromatherapy Massage",   start:"09:00", end:"10:30", room:"r1", staff:"Amy",   status:"attended",  vip:false, sensitive:false, dur:90 },
+    { id:'26-2', client:"Mak Tai",       member:"Y-00022", treatment:"Back Massage",           start:"10:00", end:"11:00", room:"r2", staff:"Betty",  status:"attended",  vip:true,  sensitive:false, dur:60 },
+    { id:'26-3', client:"Shek Kam",      member:"Y-00023", treatment:"Deep Cleanse Facial",    start:"11:00", end:"12:00", room:"r1", staff:"Candy",  status:"attended",  vip:false, sensitive:false, dur:60 },
+    { id:'26-4', client:"Fu Siu",        member:"Y-00024", treatment:"Collagen Infusion",      start:"14:00", end:"15:30", room:"r3", staff:"Amy",    status:"no_show",   vip:false, sensitive:true,  dur:90 },
+    { id:'26-5', client:"Tse Tai",       member:"Y-00025", treatment:"Laser Spot Removal",     start:"14:00", end:"15:00", room:"r3", staff:"Betty",  status:"attended",  vip:false, sensitive:false, dur:60 },
+    { id:'26-6', client:"Ko Siu Man",    member:"Y-00026", treatment:"Facial Massage",         start:"15:30", end:"16:30", room:"r2", staff:"Candy",  status:"attended",  vip:false, sensitive:false, dur:60 },
+    { id:'26-7', client:"Wan Tai",       member:"Y-00027", treatment:"Quick Touch-up",         start:"16:00", end:"17:00", room:"r4", staff:"Amy",    status:"attended",  vip:false, sensitive:false, dur:60 },
+    { id:'26-8', client:"Yau Siu Man",   member:"Y-00028", treatment:"Deep Cleanse Facial",    start:"17:00", end:"18:30", room:"r1", staff:"Betty",  status:"attended",  vip:true,  sensitive:false, dur:90 }
+  ];
+
+  // Day 25
+  appointmentsByDay[25] = [
+    { id:'25-1', client:"Pang Tai",      member:"Y-00031", treatment:"Collagen Infusion",      start:"09:30", end:"10:30", room:"r2", staff:"Amy",   status:"attended",  vip:false, sensitive:false, dur:60 },
+    { id:'25-2', client:"Or Siu Man",    member:"Y-00032", treatment:"Laser Spot Removal",     start:"10:00", end:"11:30", room:"r1", staff:"Betty",  status:"attended",  vip:false, sensitive:true,  dur:90 },
+    { id:'25-3', client:"Kung Kam",      member:"Y-00033", treatment:"Back Massage",           start:"11:00", end:"12:00", room:"r3", staff:"Candy",  status:"cancelled", vip:false, sensitive:false, dur:60 },
+    { id:'25-4', client:"Hung Siu",      member:"Y-00034", treatment:"Aromatherapy Massage",   start:"14:30", end:"16:00", room:"r2", staff:"Amy",    status:"attended",  vip:true,  sensitive:false, dur:90 },
+    { id:'25-5', client:"Chin Tai",      member:"Y-00035", treatment:"Deep Cleanse Facial",    start:"15:00", end:"16:00", room:"r4", staff:"Betty",  status:"attended",  vip:false, sensitive:false, dur:60 },
+    { id:'25-6', client:"Lui Siu Man",   member:"Y-00036", treatment:"Facial Massage",         start:"16:30", end:"17:30", room:"r1", staff:"Candy",  status:"attended",  vip:false, sensitive:false, dur:60 }
+  ];
+
+  // Day 23 (busy day)
+  appointmentsByDay[23] = [
+    { id:'23-1', client:"Tsang Siu",     member:"Y-00041", treatment:"Deep Cleanse Facial",    start:"09:00", end:"10:30", room:"r1", staff:"Amy",   status:"attended",  vip:false, sensitive:false, dur:90 },
+    { id:'23-2', client:"Chong Tai",     member:"Y-00042", treatment:"Collagen Infusion",      start:"10:00", end:"11:00", room:"r2", staff:"Betty",  status:"attended",  vip:true,  sensitive:false, dur:60 },
+    { id:'23-3', client:"Sze Kam",       member:"Y-00043", treatment:"Back Massage",           start:"11:00", end:"12:00", room:"r3", staff:"Candy",  status:"attended",  vip:false, sensitive:false, dur:60 },
+    { id:'23-4', client:"Ho Siu Ming",   member:"Y-00044", treatment:"Laser Spot Removal",     start:"14:00", end:"15:30", room:"r1", staff:"Amy",    status:"no_show",   vip:false, sensitive:true,  dur:90 },
+    { id:'23-5', client:"Lai Tai",       member:"Y-00045", treatment:"Aromatherapy Massage",   start:"14:30", end:"16:00", room:"r4", staff:"Betty",  status:"attended",  vip:false, sensitive:false, dur:90 },
+    { id:'23-6', client:"Mok Siu Man",   member:"Y-00046", treatment:"Facial Massage",         start:"15:00", end:"16:00", room:"r2", staff:"Candy",  status:"attended",  vip:false, sensitive:false, dur:60 },
+    { id:'23-7', client:"Yip Tai",       member:"Y-00047", treatment:"Quick Touch-up",         start:"16:30", end:"17:30", room:"r3", staff:"Amy",    status:"attended",  vip:false, sensitive:false, dur:60 },
+    { id:'23-8', client:"Fan Siu Man",   member:"Y-00048", treatment:"Deep Cleanse Facial",    start:"17:00", end:"18:00", room:"r1", staff:"Betty",  status:"attended",  vip:true,  sensitive:false, dur:60 },
+    { id:'23-9', client:"Kam Kam",       member:"Y-00049", treatment:"Collagen Infusion",      start:"18:00", end:"19:00", room:"r2", staff:"Candy",  status:"attended",  vip:false, sensitive:false, dur:60 }
+  ];
+
+  // Day 28 (tomorrow — lighter)
+  appointmentsByDay[28] = [
+    { id:'28-1', client:"Cheuk Siu",     member:"Y-00051", treatment:"Aromatherapy Massage",   start:"09:30", end:"11:00", room:"r2", staff:"Amy",   status:"confirmed", vip:true,  sensitive:false, dur:90 },
+    { id:'28-2', client:"Ling Tai",      member:"Y-00052", treatment:"Deep Cleanse Facial",    start:"10:00", end:"11:00", room:"r1", staff:"Betty",  status:"confirmed", vip:false, sensitive:false, dur:60 },
+    { id:'28-3', client:"Tong Siu Man",  member:"Y-00053", treatment:"Back Massage",           start:"14:00", end:"15:00", room:"r3", staff:"Candy",  status:"confirmed", vip:false, sensitive:false, dur:60 },
+    { id:'28-4', client:"Shum Kam",      member:"Y-00054", treatment:"Collagen Infusion",      start:"14:30", end:"15:30", room:"r4", staff:"Amy",    status:"confirmed", vip:false, sensitive:false, dur:60 },
+    { id:'28-5', client:"Kan Siu",       member:"Y-00055", treatment:"Laser Spot Removal",     start:"16:00", end:"17:30", room:"r1", staff:"Betty",  status:"confirmed", vip:false, sensitive:true,  dur:90 }
+  ];
+
+  // Day 19, 13, 10, 6, 5, 3, 2 — sparse days for calendar hotspots
+  [19,13,10,6,5,3,2].forEach(function(d) {
+    var a = [];
+    var names = [["Chan Siu Man","Deep Cleanse Facial","Amy","r1"],["Lee Tai","Collagen Infusion","Betty","r2"],["Cheung Kam","Back Massage","Candy","r3"]];
+    var count = (d === 2 || d === 5 || d === 3) ? 3 : (d === 6 ? 4 : 2);
+    for (var i = 0; i < count && i < names.length; i++) {
+      var n = names[i];
+      a.push({ id: 'h-'+d+'-'+i, client:n[0], member:"Y-00"+d+"0"+i, treatment:n[1], start:"10:00", end:"11:00", room:n[3], staff:n[2], status:"attended", vip:false, sensitive:false, dur:60 });
+    }
+    appointmentsByDay[d] = a;
+  });
+
+  // ==== State ====
+  var currentDay = 27;
+  var highlightStaff = null;   // staff name to highlight, or null
+  var filterStatus = null;     // status to filter by, or null
+
+  // ==== Overlap partition algorithm (production logic) ====
+  function layoutAppointments(roomApps) {
+    var sorted = roomApps.slice().sort(function(a,b) { return a.start.localeCompare(b.start); });
+    var groups = [], curGroup = [];
     sorted.forEach(function(app) {
-      if (curGroup.length === 0) {
-        curGroup = [app];
-        return;
-      }
-      // Max end time of current group (in minutes)
+      if (curGroup.length === 0) { curGroup = [app]; return; }
       var groupMaxEnd = Math.max.apply(null, curGroup.map(function(a) {
-        var p = a.end.split(':').map(Number);
-        return p[0]*60 + p[1];
+        var p = a.end.split(':').map(Number); return p[0]*60 + p[1];
       }));
       var appStart = (function() { var p = app.start.split(':').map(Number); return p[0]*60 + p[1]; })();
-
-      if (appStart < groupMaxEnd) {
-        // Overlaps — same group
-        curGroup.push(app);
-      } else {
-        // No overlap — flush group, start new
-        groups.push(curGroup);
-        curGroup = [app];
-      }
+      if (appStart < groupMaxEnd) { curGroup.push(app); }
+      else { groups.push(curGroup); curGroup = [app]; }
     });
     if (curGroup.length) groups.push(curGroup);
-
-    // Assign horizontal positions per group
     var positioned = [];
     groups.forEach(function(group) {
       var n = group.length;
       group.forEach(function(app, idx) {
-        positioned.push({
-          app: app,
-          leftPct: (idx * 100) / n,
-          widthPct: 100 / n,
-          groupSize: n
-        });
+        positioned.push({ app:app, leftPct:(idx*100)/n, widthPct:100/n, groupSize:n });
       });
     });
     return positioned;
   }
 
-  // ---- Render room grid ----
-  var gridHTML = '<div class="grid-scroll"><div class="grid-inner">';
+  // ==== Render room grid for a given day ====
+  function renderRoomGrid(day) {
+    var apps = appointmentsByDay[day] || [];
+    currentDay = day;
 
-  // Time column (left)
-  gridHTML += '<div class="time-col"><div class="header-spacer"></div>';
-  TIME_SLOTS.forEach(function(ts) {
-    var isHour = ts.endsWith(':00');
-    gridHTML += '<div class="time-slot-cell">';
-    if (isHour) gridHTML += '<span class="label">' + ts + '</span>';
-    else gridHTML += '<span class="label half">' + ts + '</span>';
-    gridHTML += '</div>';
-  });
-  gridHTML += '</div>';
-
-  // Room columns
-  rooms.forEach(function(room) {
-    var roomApps = appointments.filter(function(a) { return a.room === room.id; });
-
-    gridHTML += '<div class="room-col"><div class="room-header">' + room.name + '</div>';
-    gridHTML += '<div class="room-canvas" style="height:' + (TIME_SLOTS.length * SLOT_HEIGHT) + 'px;">';
-
-    // Grid lines
-    TIME_SLOTS.forEach(function() {
-      gridHTML += '<div class="grid-line"></div>';
-    });
-
-    // Apply overlap algorithm and render cards
-    var positioned = layoutAppointments(roomApps);
-
-    positioned.forEach(function(p) {
-      var app = p.app;
-      var top = timeToTop(app.start);
-      var h = durToHeight(app.dur);
-      var isNarrow = p.widthPct < 50;
-
-      var bgClass = '';
-      var statusLabel, statusPillClass;
-      if (app.status === 'confirmed') { statusLabel = 'Confirmed'; statusPillClass = 'confirmed'; }
-      else if (app.status === 'attended') { statusLabel = 'Attended'; statusPillClass = 'attended'; bgClass = ' opacity-60'; }
-      else { statusLabel = 'No-show'; statusPillClass = ''; bgClass = ' bg-red-50'; }
-
-      var vipBadge = app.vip ? '<span class="vip-tag">VIP</span>' : '';
-      var alertBadge = app.sensitive ? '<span class="alert-tag">Sensitive</span>' : '';
-
-      // Collision badge
-      var collisionBadge = '';
-      if (p.groupSize > 1) {
-        collisionBadge = '<span style="font-size:9px;background:#FEF3C7;color:#92400E;padding:1px 6px;border-radius:8px;font-weight:700;">' + p.groupSize + ' bookings</span>';
-      }
-
-      gridHTML += '<div class="appt-card' + (isNarrow?' narrow':'') + bgClass + '" style="top:' + top + 'px; height:' + h + 'px; left:' + (p.leftPct + 0.5) + '%; width:' + (p.widthPct - 1) + '%;">';
-      gridHTML += '<div>';
-      gridHTML += '<div class="top-row"><span class="time-range">' + app.start + ' - ' + app.end + '</span><span class="status-pill ' + statusPillClass + '">' + statusLabel + '</span></div>';
-      gridHTML += '<div class="client-name">' + app.client + ' ' + vipBadge + alertBadge + '</div>';
-      if (!isNarrow) {
-        gridHTML += '<div class="treatment-name">' + app.treatment + '</div>';
-        gridHTML += '<div class="meta-row"><span class="meta-tag">' + app.staff + '</span>' + collisionBadge + '</div>';
-      } else {
-        gridHTML += '<div class="treatment-name" style="font-size:10px;">' + app.treatment + '</div>';
-      }
-      gridHTML += '</div></div>';
-    });
-
-    gridHTML += '</div></div>'; // room-canvas, room-col
-  });
-
-  gridHTML += '</div></div>'; // grid-inner, grid-scroll
-  document.getElementById('roomGrid').innerHTML = gridHTML;
-
-  // Stats update
-  var total = appointments.length;
-  var attended = appointments.filter(function(a){ return a.status === 'attended'; }).length;
-  var confirmed = appointments.filter(function(a){ return a.status === 'confirmed'; }).length;
-  var noShow = appointments.filter(function(a){ return a.status === 'no_show'; }).length;
-  document.getElementById('statTotal').textContent = total;
-  document.getElementById('statAttended').textContent = attended;
-  document.getElementById('statPending').textContent = confirmed;
-  document.getElementById('statNoShow').textContent = noShow;
-
-  // ---- Mini calendar ----
-  (function() {
-    var today = 27;
-    var year = 2026, month = 6;
-
-    function renderCal() {
-      var firstDow = new Date(2026, 5, 1).getDay();
-      var startOffset = firstDow === 0 ? 6 : firstDow - 1;
-      var months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
-      document.getElementById('calMonthLabel').textContent = months[month-1] + ' ' + year;
-      var daysInMonth = new Date(year, month, 0).getDate();
-
-      var html = '';
-      for (var i = 0; i < startOffset; i++) {
-        var prevDay = new Date(year, month-1, 0).getDate() - startOffset + i + 1;
-        html += '<button class="day-btn other" disabled>' + prevDay + '</button>';
-      }
-      var bookedDays = [2,3,5,6,10,13,16,19,23,27];
-      for (var d = 1; d <= daysInMonth; d++) {
-        var cls = 'day-btn';
-        if (d === today) cls += ' today';
-        var count = bookedDays.indexOf(d) !== -1 ? Math.floor(Math.random()*4)+1 : 0;
-        if (count > 0) cls += ' booked';
-        html += '<button class="' + cls + '">' + d + (count > 0 ? '<span class="count">' + count + '</span>' : '') + '</button>';
-      }
-      document.getElementById('calDays').innerHTML = html;
+    // Apply filters
+    var visibleApps = apps;
+    if (filterStatus) {
+      visibleApps = apps.filter(function(a) { return a.status === filterStatus; });
     }
-    renderCal();
-    document.getElementById('calPrev').onclick = function() { month--; if (month < 1) { month = 12; year--; } renderCal(); };
-    document.getElementById('calNext').onclick = function() { month++; if (month > 12) { month = 1; year++; } renderCal(); };
-  })();
+
+    // Highlight staff: add dimming class to non-matching cards
+    var activeStaff = highlightStaff;
+
+    var html = '<div class="grid-scroll"><div class="grid-inner">';
+    // Time column
+    html += '<div class="time-col"><div class="header-spacer"></div>';
+    TIME_SLOTS.forEach(function(ts) {
+      var isHour = ts.endsWith(':00');
+      html += '<div class="time-slot-cell">';
+      html += isHour ? '<span class="label">' + ts + '</span>' : '<span class="label half">' + ts + '</span>';
+      html += '</div>';
+    });
+    html += '</div>';
+
+    // Room columns
+    rooms.forEach(function(room) {
+      var roomApps = visibleApps.filter(function(a) { return a.room === room.id; });
+      html += '<div class="room-col"><div class="room-header">' + room.name + '</div>';
+      html += '<div class="room-canvas" style="height:' + (TIME_SLOTS.length * SLOT_HEIGHT) + 'px;">';
+      TIME_SLOTS.forEach(function() { html += '<div class="grid-line"></div>'; });
+
+      var positioned = layoutAppointments(roomApps);
+      positioned.forEach(function(p) {
+        var app = p.app;
+        var top = timeToTop(app.start);
+        var h = durToHeight(app.dur);
+        var isNarrow = p.widthPct < 50;
+        var isDimmed = activeStaff && app.staff !== activeStaff;
+
+        var statusLabel = app.status === 'confirmed' ? 'Confirmed' : app.status === 'attended' ? 'Attended' : app.status === 'no_show' ? 'No-show' : 'Cancelled';
+        var statusPillClass = app.status === 'confirmed' ? 'confirmed' : app.status === 'attended' ? 'attended' : '';
+        var bgClass = '';
+        if (app.status === 'attended') bgClass = ' opacity-60';
+        else if (app.status === 'no_show') bgClass = ' bg-red-50';
+        else if (app.status === 'cancelled') bgClass = ' opacity-40';
+
+        var dimClass = isDimmed ? ' appt-dimmed' : '';
+        var highlightClass = (!isDimmed && activeStaff) ? ' appt-highlight' : '';
+
+        var vipBadge = app.vip ? '<span class="vip-tag">VIP</span>' : '';
+        var alertBadge = app.sensitive ? '<span class="alert-tag">Sensitive</span>' : '';
+        var collisionBadge = p.groupSize > 1 ? '<span style="font-size:9px;background:#FEF3C7;color:#92400E;padding:1px 6px;border-radius:8px;font-weight:700;">' + p.groupSize + ' bookings</span>' : '';
+
+        html += '<div class="appt-card' + (isNarrow?' narrow':'') + bgClass + dimClass + highlightClass + '" data-staff="' + app.staff + '" data-status="' + app.status + '" style="top:' + top + 'px; height:' + h + 'px; left:' + (p.leftPct + 0.5) + '%; width:' + (p.widthPct - 1) + '%;">';
+        html += '<div>';
+        html += '<div class="top-row"><span class="time-range">' + app.start + ' - ' + app.end + '</span><span class="status-pill ' + statusPillClass + '">' + statusLabel + '</span></div>';
+        html += '<div class="client-name">' + app.client + ' ' + vipBadge + alertBadge + '</div>';
+        if (!isNarrow) {
+          html += '<div class="treatment-name">' + app.treatment + '</div>';
+          html += '<div class="meta-row"><span class="meta-tag">' + app.staff + '</span>' + collisionBadge + '</div>';
+        } else {
+          html += '<div class="treatment-name" style="font-size:10px;">' + app.treatment + '</div>';
+        }
+        html += '</div></div>';
+      });
+
+      html += '</div></div>';
+    });
+
+    html += '</div></div>';
+    document.getElementById('roomGrid').innerHTML = html;
+    updateStats(apps);
+  }
+
+  // ==== Update stats card ====
+  function updateStats(apps) {
+    var total = apps.length;
+    var attended = apps.filter(function(a){ return a.status === 'attended'; }).length;
+    var confirmed = apps.filter(function(a){ return a.status === 'confirmed'; }).length;
+    var noShow = apps.filter(function(a){ return a.status === 'no_show'; }).length;
+
+    document.getElementById('statTotal').textContent = total;
+    document.getElementById('statAttended').textContent = attended;
+    document.getElementById('statPending').textContent = confirmed;
+    document.getElementById('statNoShow').textContent = noShow;
+
+    // Update stat pill active states
+    document.getElementById('pillAttended').className = 'sub-stat green' + (filterStatus === 'attended' ? ' active-pill' : '');
+    document.getElementById('pillPending').className = 'sub-stat amber' + (filterStatus === 'confirmed' ? ' active-pill' : '');
+    document.getElementById('pillNoShow').className = 'sub-stat red' + (filterStatus === 'no_show' ? ' active-pill' : '');
+  }
+
+  // ==== Render mini calendar ====
+  function renderCalendar(year, month, selectedDay) {
+    var firstDow = new Date(year, month-1, 1).getDay();
+    var startOffset = firstDow === 0 ? 6 : firstDow - 1;
+    var months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    document.getElementById('calMonthLabel').textContent = months[month-1] + ' ' + year;
+    var daysInMonth = new Date(year, month, 0).getDate();
+
+    // Find which days have appointments (just count them)
+    var dayCounts = {};
+    for (var d = 1; d <= daysInMonth; d++) {
+      var a = appointmentsByDay[d];
+      if (a) dayCounts[d] = a.length;
+    }
+
+    var html = '';
+    for (var i = 0; i < startOffset; i++) {
+      var prevDay = new Date(year, month-1, 0).getDate() - startOffset + i + 1;
+      html += '<button class="day-btn other" disabled>' + prevDay + '</button>';
+    }
+    for (var d = 1; d <= daysInMonth; d++) {
+      var cls = 'day-btn';
+      if (d === selectedDay) cls += ' today';
+      var cnt = dayCounts[d] || 0;
+      if (cnt > 0) cls += ' booked';
+      html += '<button class="' + cls + '" data-day="' + d + '">' + d;
+      if (cnt > 0) html += '<span class="count">' + cnt + '</span>';
+      html += '</button>';
+    }
+    document.getElementById('calDays').innerHTML = html;
+
+    // Attach click handlers to day buttons
+    var dayBtns = document.querySelectorAll('#calDays .day-btn:not(.other)');
+    dayBtns.forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        var day = parseInt(this.getAttribute('data-day'));
+        // Remove old 'today', add to new
+        document.querySelectorAll('#calDays .day-btn.today').forEach(function(b) { b.classList.remove('today'); });
+        this.classList.add('today');
+        renderRoomGrid(day);
+      });
+    });
+  }
+
+  // ==== Calendar month navigation ====
+  var calYear = 2026, calMonth = 6;
+
+  function refreshCalendar() { renderCalendar(calYear, calMonth, currentDay); }
+
+  document.getElementById('calPrev').onclick = function() {
+    calMonth--; if (calMonth < 1) { calMonth = 12; calYear--; }
+    refreshCalendar();
+  };
+  document.getElementById('calNext').onclick = function() {
+    calMonth++; if (calMonth > 12) { calMonth = 1; calYear++; }
+    refreshCalendar();
+  };
+
+  // ==== Staff click handlers ====
+  function setupStaffClicks() {
+    ['amy','betty','candy'].forEach(function(name) {
+      var el = document.getElementById('staff-' + name);
+      if (!el) return;
+      el.style.cursor = 'pointer';
+      el.addEventListener('click', function() {
+        var staffName = name.charAt(0).toUpperCase() + name.slice(1);
+        if (highlightStaff === staffName) {
+          // Deselect
+          highlightStaff = null;
+          el.classList.remove('staff-active');
+          document.querySelectorAll('.staff-row').forEach(function(r) { r.style.background = ''; });
+        } else {
+          // Select
+          highlightStaff = staffName;
+          document.querySelectorAll('.staff-row').forEach(function(r) { r.style.background = ''; r.classList.remove('staff-active'); });
+          el.classList.add('staff-active');
+        }
+        renderRoomGrid(currentDay);
+      });
+    });
+  }
+
+  // ==== Stat pill click handlers ====
+  function setupStatClicks() {
+    document.getElementById('pillAttended').addEventListener('click', function() {
+      filterStatus = (filterStatus === 'attended') ? null : 'attended';
+      renderRoomGrid(currentDay);
+    });
+    document.getElementById('pillPending').addEventListener('click', function() {
+      filterStatus = (filterStatus === 'confirmed') ? null : 'confirmed';
+      renderRoomGrid(currentDay);
+    });
+    document.getElementById('pillNoShow').addEventListener('click', function() {
+      filterStatus = (filterStatus === 'no_show') ? null : 'no_show';
+      renderRoomGrid(currentDay);
+    });
+    // Click total to reset
+    document.getElementById('statTotal').parentElement.style.cursor = 'pointer';
+    document.getElementById('statTotal').parentElement.addEventListener('click', function() {
+      filterStatus = null;
+      highlightStaff = null;
+      document.querySelectorAll('.staff-row').forEach(function(r) { r.classList.remove('staff-active'); r.style.background = ''; });
+      renderRoomGrid(currentDay);
+    });
+  }
+
+  // ==== Initial render ====
+  renderCalendar(calYear, calMonth, currentDay);
+  renderRoomGrid(currentDay);
+  setupStaffClicks();
+  setupStatClicks();
 })();
 </script>
 
